@@ -131,3 +131,9 @@ After opening, Lenis adds gently eased wheel scrolling and animated navigation b
 ## Hosting
 
 Deploy the generated `dist` folder to a static host. Configure SPA fallback to `index.html` so direct `/invite/:guestId` visits work. Set the final site's canonical URL and social-sharing metadata before sending links.
+
+### Vercel
+
+Use the **Vite** framework preset, build command **`npm run build`**, and output directory **`dist`**. The root `vercel.json` rewrites incoming routes to `index.html`, allowing React Router to handle direct guest links such as `https://nabeel-wedding.vercel.app/invite/4250` and page refreshes. Without this SPA fallback, Vercel returns its own `404 NOT_FOUND` before React can resolve the invitation.
+
+Include `vercel.json` in the deployed revision and redeploy after adding or changing it; an existing deployment will not pick up local edits. Verify the guest link by opening it directly in a new tab. The home page and missing/unknown guest IDs still show the app's invalid-invitation screen, not a default guest card. Only the generated `dist` output is published; keep the private WhatsApp contacts and local sending server out of deployment.
