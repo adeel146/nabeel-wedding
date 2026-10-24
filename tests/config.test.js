@@ -19,6 +19,19 @@ test('all-event guest receives exactly three chronological events', () => {
 test('Walima-only guest does not receive other events', () => {
   assert.deepEqual(getGuestEvents(getGuest('guest-002')).map(event => event.id), ['walima'])
 })
+test('Barat-only guest does not receive other events', () => {
+  assert.deepEqual(getGuestEvents(getGuest('guest-004')).map(event => event.id), ['barat'])
+})
+test('celebrations take place on the confirmed November dates', () => {
+  assert.equal(weddingConfig.events.mehandi.date, '2026-11-13T19:00:00+05:00')
+  assert.equal(weddingConfig.events.barat.date, '2026-11-14T17:00:00+05:00')
+  assert.equal(weddingConfig.events.walima.date, '2026-11-15T19:00:00+05:00')
+})
+test('Barat schedule includes Sehra Bandi and departure with countdown at Sehra Bandi', () => {
+  const [barat] = getGuestEvents(getGuest('guest-004'))
+  assert.equal(barat.time, 'Sehra Bandi: 5:00 PM; Barat departure: 6:00 PM')
+  assert.equal(barat.date, '2026-11-14T17:00:00+05:00')
+})
 test('two-event guest receives only Barat and Walima', () => {
   assert.deepEqual(getGuestEvents(getGuest('guest-003')).map(event => event.id), ['barat', 'walima'])
 })
@@ -31,8 +44,12 @@ test('readable guest alias resolves to the correct canonical ID', () => {
 test('every venue has a safe correctly encoded Maps link and timezone-aware date', () => {
   for (const event of Object.values(weddingConfig.events)) {
     const url = new URL(mapUrl(event))
-    assert.equal(url.origin, 'https://www.google.com')
-    assert.equal(url.searchParams.get('query'), `${event.venue}, ${event.address}`)
+    if (event.id === 'walima') {
+      assert.equal(url.href, 'https://maps.app.goo.gl/g8eirmLg1vf3ecKm8')
+    } else {
+      assert.equal(url.origin, 'https://www.google.com')
+      assert.equal(url.searchParams.get('query'), `${event.venue}, ${event.address}`)
+    }
     assert.ok(event.date.endsWith('+05:00'))
     assert.ok(Number.isFinite(new Date(event.date).getTime()))
   }

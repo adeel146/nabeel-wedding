@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
+import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowDown, ArrowUpRight, CalendarDays, Clock3, Flower2, Heart, MapPin, Menu, Music2, Pause, Sparkles, X } from 'lucide-react'
 import { getGuest, getGuestEvents, mapUrl, weddingConfig } from './config'
+import { ScrollEffects } from './ScrollEffects'
+import { useReducedMotion } from './useReducedMotion'
 
 type Guest = NonNullable<ReturnType<typeof getGuest>>
 type WeddingEvent = (typeof weddingConfig.events)[keyof typeof weddingConfig.events]
@@ -14,7 +16,7 @@ const shortDate = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'sho
 
 function Reveal({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
   const reduced = useReducedMotion()
-  return <motion.div className={className} initial={reduced ? false : { opacity: 0, y: 25 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.8, delay }}>{children}</motion.div>
+  return <motion.div className={className} initial={reduced ? false : { opacity: 0, y: 42, scale: 0.985 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true, amount: 0.12 }} transition={{ duration: reduced ? 0 : 0.95, delay: reduced ? 0 : delay, ease: [0.22, 1, 0.36, 1] }}>{children}</motion.div>
 }
 
 function Ornament({ light = false }: { light?: boolean }) {
@@ -49,9 +51,13 @@ function Botanical({ className = '' }: { className?: string }) {
   </g></svg>
 }
 
-function InvitationIntro({ guest, onOpen }: { guest: Guest; onOpen: () => void }) {
+function InvitationIntro({ guest, onOpen, onBeginOpen }: { guest: Guest; onOpen: () => void; onBeginOpen: () => void }) {
   const [opening, setOpening] = useState(false)
   const reduced = useReducedMotion()
+  function beginOpening() {
+    onBeginOpen()
+    setOpening(true)
+  }
   useEffect(() => {
     if (!opening) return
     const timer = setTimeout(onOpen, reduced ? 20 : 1000)
@@ -63,10 +69,10 @@ function InvitationIntro({ guest, onOpen }: { guest: Guest; onOpen: () => void }
     <div className={`envelope ${opening ? 'opening' : ''}`}>
       <div className="envelope-inner"><Flower2 size={30} strokeWidth={1} /><p>A celebration of love</p><h2>{coupleName}</h2></div>
       <div className="envelope-flap" /><div className="envelope-front" />
-      <button className="wax-seal" onClick={() => setOpening(true)} disabled={opening} aria-label="Open your invitation"><span>N</span></button>
+      <button className="wax-seal" onClick={beginOpening} disabled={opening} aria-label="Open your invitation"><span>N</span></button>
     </div>
     <p className="intro-for">Especially for <span>{guest.name}</span></p>
-    <button autoFocus className="intro-open" onClick={() => setOpening(true)} disabled={opening}>{opening ? 'A beautiful beginning awaits…' : 'Open your invitation'} {!opening && <ArrowUpRight size={16} />}</button>
+    <button autoFocus className="intro-open" onClick={beginOpening} disabled={opening}>{opening ? 'A beautiful beginning awaits…' : 'Open your invitation'} {!opening && <ArrowUpRight size={16} />}</button>
     <p className="intro-note">WITH LOVE, FROM THE AKRAM FAMILY</p>
   </motion.div>
 }
@@ -89,7 +95,7 @@ function CoupleSection({ events }: { events: WeddingEvent[] }) {
   const y = useTransform(scrollY, [0, 800], [0, 75])
   return <section className="hero" id="home">
     <div className="hero-pattern" /><div className="hero-glow" />
-    <div className="hero-topline"><span>LAHORE, PAKISTAN</span><span>DECEMBER 2026</span></div>
+    <div className="hero-topline"><span>LAHORE, PAKISTAN</span><span>{new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric', timeZone: 'Asia/Karachi' }).format(new Date(events[0].date)).toUpperCase()}</span></div>
     <Botanical className="hero-botanical left" /><Botanical className="hero-botanical right" />
     <motion.div className="arch-wrap" style={{ y: reduced ? 0 : y }}><MughalArch className="mughal-arch" /></motion.div>
     <div className="hero-content">
@@ -147,18 +153,18 @@ function VenueSection({ events }: { events: WeddingEvent[] }) {
   return <section id="venue" className="venue-section"><div className="venue-visual"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1400&q=85" alt="Warmly lit wedding reception with elegant floral arrangements" loading="lazy" /><div className="venue-image-overlay" /><div className="venue-image-note"><span>BEAUTIFUL PLACES. BEAUTIFUL BEGINNINGS.</span><p>Where our memories<br /><em>will bloom.</em></p></div></div><Reveal className="venue-content"><p className="eyebrow">WE WILL MEET YOU HERE</p><h2>A setting for<br /><em>something special</em></h2><div className="venue-tabs" role="tablist" aria-label="Event venues">{events.map(item => <button key={item.id} id={`tab-${item.id}`} role="tab" aria-selected={selected === item.id} aria-controls="venue-panel" onClick={() => setSelected(item.id)}>{item.title}</button>)}</div><div id="venue-panel" role="tabpanel" aria-labelledby={`tab-${event.id}`}><h3>{event.venue}</h3><p className="body-copy">{event.address}</p><p className="venue-date"><CalendarDays size={15} />{dateFormat.format(new Date(event.date))} · {event.time}</p><a className="primary-button" href={mapUrl(event)} target="_blank" rel="noreferrer">Get directions <ArrowUpRight size={15} /></a></div><p className="venue-note"><MapPin size={13} /> In the heart of Lahore, with all our hearts.</p></Reveal></section>
 }
 
-function MusicPlayer() {
+function useBackgroundMusic() {
   const audioRef = useRef<AudioContext | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState('')
-  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); void audioRef.current?.close() }, [])
-  async function toggle() {
-    if (playing && audioRef.current) {
-      try { await audioRef.current.suspend(); setPlaying(false) }
-      catch { setError('Music could not be paused. Please try again.') }
-      return
-    }
+  useEffect(() => () => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    void audioRef.current?.close()
+    timerRef.current = null
+    audioRef.current = null
+  }, [])
+  async function start() {
     try {
       if (!audioRef.current) {
         const context = new AudioContext()
@@ -178,13 +184,26 @@ function MusicPlayer() {
           oscillator.connect(gain); gain.connect(context.destination)
           oscillator.start(); oscillator.stop(context.currentTime + 2.6)
         }
+        timerRef.current = setInterval(playNote, 850)
         await context.resume()
         playNote()
-        timerRef.current = setInterval(playNote, 850)
       } else { await audioRef.current.resume() }
+      if (audioRef.current.state !== 'running') throw new Error('Audio context did not start')
       setPlaying(true); setError('')
     } catch { setError('Audio is unavailable in this browser.'); setPlaying(false) }
   }
+  async function toggle() {
+    if (playing && audioRef.current) {
+      try { await audioRef.current.suspend(); setPlaying(false); setError('') }
+      catch { setError('Music could not be paused. Please try again.') }
+    } else {
+      await start()
+    }
+  }
+  return { playing, error, start, toggle }
+}
+
+function MusicPlayer({ playing, error, toggle }: ReturnType<typeof useBackgroundMusic>) {
   return <div className="music-control">{error && <span role="alert" className="music-error">{error}</span>}<button className={playing ? 'music-button playing' : 'music-button'} onClick={() => void toggle()} aria-label={playing ? 'Pause background music' : 'Play soft instrumental music'} title={playing ? 'Pause music' : 'A little music?'}>{playing ? <Pause size={17} /> : <Music2 size={17} />}<span>{playing ? 'Sound on' : 'Sound off'}</span></button></div>
 }
 
@@ -200,11 +219,12 @@ export function WeddingInvitation() {
   const { guestId = 'guest-001' } = useParams()
   const guest = getGuest(guestId)
   const [opened, setOpened] = useState(false)
+  const music = useBackgroundMusic()
   useEffect(() => {
     document.body.style.overflow = opened || !guest ? '' : 'hidden'
     return () => { document.body.style.overflow = '' }
   }, [opened, guest])
   if (!guest) return <NotFound />
   const events = getGuestEvents(guest)
-  return <div key={guest.id}><AnimatePresence>{!opened && <InvitationIntro guest={guest} onOpen={() => setOpened(true)} />}</AnimatePresence><div inert={!opened}><Navigation name={guest.name} /><main><CoupleSection events={events} /><GuestGreeting guest={guest} /><Countdown date={events[0].date} /><EventsSection events={events} /><WeddingTimeline events={events} /><VenueSection key={`venue-${guest.id}`} events={events} /></main><Footer /><MusicPlayer /></div></div>
+  return <div key={guest.id}><AnimatePresence>{!opened && <InvitationIntro guest={guest} onBeginOpen={() => void music.start()} onOpen={() => setOpened(true)} />}</AnimatePresence><div inert={!opened}><ScrollEffects enabled={opened} /><Navigation name={guest.name} /><main><CoupleSection events={events} /><GuestGreeting guest={guest} /><Countdown date={events[0].date} /><EventsSection events={events} /><WeddingTimeline events={events} /><VenueSection key={`venue-${guest.id}`} events={events} /></main><Footer /><MusicPlayer {...music} /></div></div>
 }
