@@ -24,9 +24,9 @@ The roster contains 60 members with their supplied event assignments and invitat
 | `/invite/temp-bushra` | Bushra | All three events, 2 persons each |
 | `/invite/temp-muhammad-arslan` | Muhammad Arslan | All three events, with family |
 
-The home page, `/invite/guest-001`, and `/invite/muhammad-arslan` remain aliases for Muhammad Arslan's invitation.
+The explicit links `/invite/guest-001` and `/invite/muhammad-arslan` remain aliases for Muhammad Arslan's invitation. The home page `/` does not open any guest's card.
 
-Unknown invitations show an explicit invalid-link screen rather than another guest's invitation.
+Missing IDs (including `/` and `/invite`) and unknown invitations show an explicit invalid-link screen rather than another guest's invitation. There is no default or sample invitation.
 
 ## Personalize
 
@@ -88,7 +88,7 @@ Full phone numbers are not stored in the public guest configuration. Shared endi
 | Ijaz | `temp-ijaz` | Number missing |
 | Rauf | `temp-rauf` | Number missing |
 
-When a number is available, rename that member's key in `guests` to its last four digits, quoted as a string to preserve leading zeros. Check that no other member already uses that ending; otherwise keep the distinct temporary ID until a unique number is provided. Leave their name, events, and sizes unchanged. Update the roster test expectations and this table, rebuild, redeploy, and send the new link. Previously sent temporary links stop working after renaming unless explicitly retained as aliases. For Muhammad Arslan, also update the canonical target in `getGuest` so the home page and legacy aliases continue to work.
+When a number is available, rename that member's key in `guests` to its last four digits, quoted as a string to preserve leading zeros. Check that no other member already uses that ending; otherwise keep the distinct temporary ID until a unique number is provided. Leave their name, events, and sizes unchanged. Update the roster test expectations and this table, rebuild, redeploy, and send the new link. Previously sent temporary links stop working after renaming unless explicitly retained as aliases. For Muhammad Arslan, also update the canonical target in `getGuest` so the explicit legacy aliases continue to work.
 
 Samina at `/invite/2915` (with family) and Samina at `/invite/temp-samina` (2 persons) are separate invitations. Likewise, Muhammad Shafique at `/invite/4226` (with family) and Muhammad shafique at `/invite/6664` (Barat and Walima, 2 persons) remain separate.
 
@@ -96,7 +96,7 @@ Samina at `/invite/2915` (with family) and Samina at `/invite/temp-samina` (2 pe
 
 Run `npm run whatsapp`, then open **http://127.0.0.1:5180** on this computer. This is a separate localhost-only tool, not a route on the public invitation site, and it does not need the Vite development server.
 
-1. Review the **published invitation website home URL**, which defaults to **https://nabeel-wedding.netlify.app**. You can change it if needed. An empty previously saved URL also uses this default; an existing non-empty saved URL is preserved. Localhost links are rejected because guests cannot open your computer's preview.
+1. Review the **published invitation website home URL**, which defaults to **https://nabeel-wedding.vercel.app**. You can change it if needed. Empty saved URLs and the previous Netlify default automatically use this address; other custom saved URLs are preserved. Localhost links are rejected because guests cannot open your computer's preview.
 2. Review the editable message, keeping `{name}` and `{link}`. Every guest gets their own name and invitation ID; the page shows their event allowances and a message preview.
 3. Check each phone number. Pakistan mobile numbers starting `03` are converted to international `92` format; other countries need their country code. Shared phone numbers are flagged, not merged.
 4. Click **Send on WhatsApp** for a guest. WhatsApp opens with their phone number and personalized message. Review it and press **Send inside WhatsApp** yourself.
@@ -114,7 +114,7 @@ Keep the contacts file, browser data, and this local server private. Do not expo
 
 The invitation does not collect RSVPs or guest messages.
 
-URL-based frontend filtering is presentation, not authorization; bundled guest names and invitation assignments are public. Guests can access another invitation if they obtain or guess its ID, and the home page shows Muhammad Arslan's all-event invitation. Four-digit and temporary IDs are guessable: they distinguish invitations but do not prevent access. Do not add sensitive guest details to this frontend. Enforcing event access requires backend authorization; verifying the recipient also requires authentication.
+URL-based frontend filtering is presentation, not authorization; bundled guest names and invitation assignments are public. Missing IDs show an invalid-link screen, but guests can still access another invitation if they obtain or guess its ID. Four-digit and temporary IDs are guessable: they distinguish invitations but do not prevent access. Do not add sensitive guest details to this frontend. Enforcing event access requires backend authorization; verifying the recipient also requires authentication.
 
 ## Music, motion, assets
 

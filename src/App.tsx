@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowDown, ArrowUpRight, CalendarDays, Clock3, Flower2, Heart, MapPin, Menu, Music2, Pause, Sparkles, UsersRound, X } from 'lucide-react'
 import { getGuest, getGuestEvents, mapUrl, weddingConfig } from './config'
@@ -217,12 +217,12 @@ function Footer() {
 }
 
 export function NotFound() {
-  return <main className="not-found"><Flower2 size={40} strokeWidth={1} /><p className="eyebrow">A PERSONAL CELEBRATION</p><h1>Let’s find <em>your invitation.</em></h1><p>This invitation link is not recognized. Please check the link<br />shared with you or contact the Akram family.</p><Link to="/" className="primary-button">View sample invitation <ArrowUpRight size={15} /></Link></main>
+  return <main className="not-found"><Flower2 size={40} strokeWidth={1} /><p className="eyebrow">A PERSONAL CELEBRATION</p><h1>Let’s find <em>your invitation.</em></h1><p>This invitation link is missing a guest ID or is not recognized. Please use the personal link shared with you or contact the Akram family.</p></main>
 }
 
 export function WeddingInvitation() {
-  const { guestId = 'guest-001' } = useParams()
-  const guest = getGuest(guestId)
+  const { guestId } = useParams()
+  const guest = guestId ? getGuest(guestId) : null
   const [opened, setOpened] = useState(false)
   const music = useBackgroundMusic()
   useEffect(() => {

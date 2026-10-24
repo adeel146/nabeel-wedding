@@ -43,8 +43,8 @@ test('Barat schedule includes Sehra Bandi and departure with countdown at Sehra 
 test('two-event guest receives only Barat and Walima', () => {
   assert.deepEqual(getGuestEvents(getGuest('3232')).map(event => event.id), ['barat', 'walima'])
 })
-test('unrecognized IDs including inherited object keys are rejected', () => {
-  for (const id of ['unknown', 'toString', '__proto__', 'constructor']) assert.equal(getGuest(id), null)
+test('missing and unrecognized IDs including inherited object keys are rejected', () => {
+  for (const id of [undefined, null, '', ' ', 'unknown', 'toString', '__proto__', 'constructor']) assert.equal(getGuest(id), null)
 })
 test('readable guest alias resolves to the correct canonical ID', () => {
   for (const id of ['guest-001', 'muhammad-arslan', 'temp-muhammad-arslan']) {

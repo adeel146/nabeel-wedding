@@ -8,7 +8,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<WeddingInvitation />} />
+        <Route path="/" element={<NotFound />} />
         <Route path="/invite/:guestId" element={<WeddingInvitation />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -1,7 +1,7 @@
 import { invitationUrl, normalizePhone, normalizeSiteUrl, personalizedMessage, whatsappUrl } from './whatsapp-links.mjs'
 
 const storageKey = 'wedding-whatsapp-sender-v1'
-const defaultSiteUrl = 'https://nabeel-wedding.netlify.app'
+const defaultSiteUrl = 'https://nabeel-wedding.vercel.app'
 const siteInput = document.getElementById('site-url')
 const messageInput = document.getElementById('message')
 const searchInput = document.getElementById('search')
@@ -207,7 +207,9 @@ async function init() {
   } catch (error) {
     showError(`Saved browser settings could not be restored: ${error.message} No saved values were applied; check the settings before sending.`)
   }
-  if (!state.siteUrl.trim()) state.siteUrl = defaultSiteUrl
+  if (!state.siteUrl.trim() || state.siteUrl.trim().replace(/\/+$/, '') === 'https://nabeel-wedding.netlify.app') {
+    state.siteUrl = defaultSiteUrl
+  }
   siteInput.value = state.siteUrl
   messageInput.value = state.message
   for (const input of [siteInput, messageInput]) {
