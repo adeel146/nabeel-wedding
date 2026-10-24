@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
-import { ArrowDown, ArrowUpRight, CalendarDays, Clock3, Flower2, Heart, MapPin, Menu, Music2, Pause, Sparkles, X } from 'lucide-react'
+import { ArrowDown, ArrowUpRight, CalendarDays, Clock3, Flower2, Heart, MapPin, Menu, Music2, Pause, Sparkles, UsersRound, X } from 'lucide-react'
 import { getGuest, getGuestEvents, mapUrl, weddingConfig } from './config'
 import { ScrollEffects } from './ScrollEffects'
 import { useReducedMotion } from './useReducedMotion'
 
 type Guest = NonNullable<ReturnType<typeof getGuest>>
-type WeddingEvent = (typeof weddingConfig.events)[keyof typeof weddingConfig.events]
+type WeddingEvent = ReturnType<typeof getGuestEvents>[number]
 const groomFirstName = weddingConfig.groom.split(' ')[0]
 const coupleName = `${groomFirstName} weds ${weddingConfig.bride}`
 const dateFormat = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Asia/Karachi' })
@@ -128,11 +128,16 @@ function Countdown({ date }: { date: string }) {
 
 const eventIcons = { mehandi: Flower2, barat: Sparkles, walima: Heart }
 
+function InvitationSize({ label }: { label: WeddingEvent['invitationSize'] }) {
+  if (!label) return null
+  return <p className="invitation-size"><UsersRound size={18} aria-hidden="true" /><span><strong>INVITATION FOR</strong>{label}</span></p>
+}
+
 function EventCard({ event, index }: { event: WeddingEvent; index: number }) {
   const Icon = eventIcons[event.id as keyof typeof eventIcons]
   return <Reveal delay={index * 0.1} className={`event-card ${event.id}`}>
     <div className="event-art"><div className="event-art-arch" /><Botanical className="event-leaf a" /><Botanical className="event-leaf b" /><span className="event-number">0{index + 1}</span><span lang="ur" dir="rtl" className="event-urdu">{event.urdu}</span><div className="event-symbol"><Icon strokeWidth={0.8} size={44} /></div><p>{event.label}</p></div>
-    <div className="event-body"><p className="eyebrow">{dayFormat.format(new Date(event.date))} · {dateFormat.format(new Date(event.date))}</p><h3>{event.title}</h3><p className="event-subtitle">{event.subtitle}</p><div className="event-details"><p><Clock3 /><span>{event.time}</span></p><p><MapPin /><span>{event.venue}<small>{event.address}</small></span></p></div><div className="event-dress"><span>DRESS NOTE</span>{event.dress}</div><a className="event-map" href={mapUrl(event)} target="_blank" rel="noreferrer">View location <ArrowUpRight size={15} /></a></div>
+    <div className="event-body"><p className="eyebrow">{dayFormat.format(new Date(event.date))} · {dateFormat.format(new Date(event.date))}</p><h3>{event.title}</h3><p className="event-subtitle">{event.subtitle}</p><InvitationSize label={event.invitationSize} /><div className="event-details"><p><Clock3 /><span>{event.time}</span></p><p><MapPin /><span>{event.venue}<small>{event.address}</small></span></p></div><div className="event-dress"><span>DRESS NOTE</span>{event.dress}</div><a className="event-map" href={mapUrl(event)} target="_blank" rel="noreferrer">View location <ArrowUpRight size={15} /></a></div>
   </Reveal>
 }
 
@@ -143,14 +148,14 @@ function EventsSection({ events }: { events: WeddingEvent[] }) {
 function WeddingTimeline({ events }: { events: WeddingEvent[] }) {
   return <section id="schedule" className="timeline-section section-pad"><Reveal className="section-heading"><p className="eyebrow">YOUR INVITATION AT A GLANCE</p><h2>A beautiful <em>sequence</em></h2><p className="body-copy">Each evening, another memory to cherish.</p></Reveal><div className={`timeline ${events.length === 1 ? 'single' : ''}`}>{events.map((event, index) => {
     const Icon = eventIcons[event.id as keyof typeof eventIcons]
-    return <Reveal key={event.id} delay={index * 0.15} className="timeline-item"><span className="timeline-date">{shortDate.format(new Date(event.date))}</span><div className="timeline-node"><Icon size={21} strokeWidth={1.1} /></div><h3>{event.title}</h3><p>{dayFormat.format(new Date(event.date))} · {event.time.replace(' onwards', '')}</p><small>{event.venue}</small></Reveal>
+    return <Reveal key={event.id} delay={index * 0.15} className="timeline-item"><span className="timeline-date">{shortDate.format(new Date(event.date))}</span><div className="timeline-node"><Icon size={21} strokeWidth={1.1} /></div><h3>{event.title}</h3><p>{dayFormat.format(new Date(event.date))} · {event.time.replace(' onwards', '')}</p><small>{event.venue}</small><InvitationSize label={event.invitationSize} /></Reveal>
   })}</div></section>
 }
 
 function VenueSection({ events }: { events: WeddingEvent[] }) {
   const [selected, setSelected] = useState(events[0].id)
   const event = events.find(item => item.id === selected) ?? events[0]
-  return <section id="venue" className="venue-section"><div className="venue-visual"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1400&q=85" alt="Warmly lit wedding reception with elegant floral arrangements" loading="lazy" /><div className="venue-image-overlay" /><div className="venue-image-note"><span>BEAUTIFUL PLACES. BEAUTIFUL BEGINNINGS.</span><p>Where our memories<br /><em>will bloom.</em></p></div></div><Reveal className="venue-content"><p className="eyebrow">WE WILL MEET YOU HERE</p><h2>A setting for<br /><em>something special</em></h2><div className="venue-tabs" role="tablist" aria-label="Event venues">{events.map(item => <button key={item.id} id={`tab-${item.id}`} role="tab" aria-selected={selected === item.id} aria-controls="venue-panel" onClick={() => setSelected(item.id)}>{item.title}</button>)}</div><div id="venue-panel" role="tabpanel" aria-labelledby={`tab-${event.id}`}><h3>{event.venue}</h3><p className="body-copy">{event.address}</p><p className="venue-date"><CalendarDays size={15} />{dateFormat.format(new Date(event.date))} · {event.time}</p><a className="primary-button" href={mapUrl(event)} target="_blank" rel="noreferrer">Get directions <ArrowUpRight size={15} /></a></div><p className="venue-note"><MapPin size={13} /> In the heart of Lahore, with all our hearts.</p></Reveal></section>
+  return <section id="venue" className="venue-section"><div className="venue-visual"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1400&q=85" alt="Warmly lit wedding reception with elegant floral arrangements" loading="lazy" /><div className="venue-image-overlay" /><div className="venue-image-note"><span>BEAUTIFUL PLACES. BEAUTIFUL BEGINNINGS.</span><p>Where our memories<br /><em>will bloom.</em></p></div></div><Reveal className="venue-content"><p className="eyebrow">WE WILL MEET YOU HERE</p><h2>A setting for<br /><em>something special</em></h2><div className="venue-tabs" role="tablist" aria-label="Event venues">{events.map(item => <button key={item.id} id={`tab-${item.id}`} role="tab" aria-selected={selected === item.id} aria-controls="venue-panel" onClick={() => setSelected(item.id)}>{item.title}</button>)}</div><div id="venue-panel" role="tabpanel" aria-labelledby={`tab-${event.id}`}><h3>{event.venue}</h3><p className="body-copy">{event.address}</p><p className="venue-date"><CalendarDays size={15} />{dateFormat.format(new Date(event.date))} · {event.time}</p><InvitationSize label={event.invitationSize} /><a className="primary-button" href={mapUrl(event)} target="_blank" rel="noreferrer">Get directions <ArrowUpRight size={15} /></a></div><p className="venue-note"><MapPin size={13} /> In the heart of Lahore, with all our hearts.</p></Reveal></section>
 }
 
 function useBackgroundMusic() {

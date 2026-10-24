@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Private WhatsApp invitation sender</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/whatsapp.css">
+  <script type="module" src="/whatsapp-page.mjs"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">LOCAL ONLY / MANUAL SENDING</p>
+      <h1>Send your wedding invitations</h1>
+      <p>Open each guest's chat, then press <strong>Send inside WhatsApp</strong>. Opening a chat does not send a message.</p>
+      <p class="notice">Keep this page on your computer. Phone numbers are not included in the public invitation website. Shared numbers receive separate personal links.</p>
+    </header>
+    <p id="notice" role="status">Loading your guest list...</p>
+    <p id="error" role="alert" hidden></p>
+    <section aria-labelledby="settings-heading">
+      <h2 id="settings-heading">Message settings</h2>
+      <label for="site-url">Published invitation website URL</label>
+      <input id="site-url" type="url" placeholder="https://your-invitation.netlify.app" aria-describedby="site-help" autocomplete="off">
+      <p id="site-help" class="hint">Enter your deployed website home URL, not localhost or a guest's invitation link.</p>
+      <label for="message">Personalized message</label>
+      <textarea id="message" rows="7" aria-describedby="message-help"></textarea>
+      <p id="message-help" class="hint">Keep {name} and {link}; they are replaced separately for each guest. Settings, phone edits, and manually marked sent statuses are remembered in this browser on this local address. Phone edits do not change invitation IDs or your private contacts file.</p>
+      <p id="settings-error" role="status"></p>
+    </section>
+    <section aria-labelledby="guests-heading">
+      <h2 id="guests-heading">Guest list</h2>
+      <p id="counts" aria-live="polite"></p>
+      <div class="filters">
+        <div>
+          <label for="search">Find a guest</label>
+          <input id="search" type="search" placeholder="Search name, ID, or phone">
+        </div>
+        <div>
+          <label for="filter">Show invitations</label>
+          <select id="filter">
+            <option value="all">All guests</option>
+            <option value="unsent">Not marked sent</option>
+            <option value="sent">Marked sent</option>
+            <option value="missing">Missing or invalid phone</option>
+          </select>
+        </div>
+      </div>
+      <div id="guests"></div>
+      <p id="empty" hidden>No guests match your search.</p>
+    </section>
+  </main>
+</body>
+</html>
