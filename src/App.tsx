@@ -211,13 +211,7 @@ function MusicPlayer({ playing, error, toggle }: ReturnType<typeof useBackground
 }
 
 function Footer() {
-  return <footer>
-    <Ornament />
-    <p lang="ar" dir="rtl" className="footer-dua">بَارَكَ اللَّهُ لَكُمَا وَبَارَكَ عَلَيْكُمَا</p>
-    <p className="footer-translation">NABEEL WEDS ZAINAB · DECEMBER 2026</p>
-    <p className="footer-message">MADE WITH LOVE, TO BE SHARED WITH LOVE</p>
-    <div className="footer-bottom"><span>December 2026 to November 2026</span></div>
-  </footer>
+  return <footer><Ornament /><p lang="ar" dir="rtl" className="footer-dua">بَارَكَ اللَّهُ لَكُمَا وَبَارَكَ عَلَيْكُمَا</p><p className="footer-translation">May Allah bless this union with love, mercy, and a lifetime of happiness.</p><h2>With love, <em>the Akram family</em></h2><div className="footer-bottom"><span>{coupleName.toUpperCase()} · NOVEMBER 2026</span><span>MADE WITH LOVE, TO BE SHARED WITH LOVE <Heart size={10} /></span></div></footer>
 }
 
 export function NotFound() {
@@ -235,5 +229,5 @@ export function WeddingInvitation() {
   }, [opened, guest])
   if (!guest) return <NotFound />
   const events = getGuestEvents(guest)
-  return <div key={guest.id}><AnimatePresence>{!opened && <InvitationIntro guest={guest} onBeginOpen={() => void music.start()} onOpen={() => setOpened(true)} />}</AnimatePresence><div inert={!opened ? 'true' : undefined}><ScrollEffects enabled={opened} /><Navigation name={guest.name} /><main><CoupleSection events={events} /><GuestGreeting guest={guest} /><Countdown date={events[0].date} /><EventsSection events={events} /><WeddingTimeline events={events} /><VenueSection events={events} /></main><Footer /><MusicPlayer {...music} /></div></div>
+  return <div key={guest.id}><AnimatePresence>{!opened && <InvitationIntro guest={guest} onBeginOpen={() => void music.start()} onOpen={() => setOpened(true)} />}</AnimatePresence><div inert={!opened}><ScrollEffects enabled={opened} /><Navigation name={guest.name} /><main><CoupleSection events={events} /><GuestGreeting guest={guest} /><Countdown date={events[0].date} /><EventsSection events={events} /><WeddingTimeline events={events} /><VenueSection events={events} /></main><Footer /><MusicPlayer {...music} /></div></div>
 }

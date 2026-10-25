@@ -124,6 +124,8 @@ The botanical and Mughal arch artwork is inline original SVG. Reception photogra
 
 Font sizes are 21% larger than the original design after two successive 10% increases, including responsive sizes. Original font families, colors, and spacing are retained.
 
+Each event card's "View location" button matches its artwork background: olive for Mehandi, burgundy for Barat, and champagne for Walima. Labels use contrasting text, with underlining on hover and a visible keyboard-focus outline.
+
 Reduced-motion preferences disable floating particles, parallax, animated reveals, and smooth scrolling. The envelope has a keyboard-accessible opening button. The main invitation is inert until opened.
 
 After opening, Lenis adds gently eased wheel scrolling and animated navigation between sections. Touch scrolling remains native. A thin gold progress line tracks the page, and sections rise softly into view. Lenis is destroyed on unmount or when reduced motion is enabled, restoring native scrolling.
