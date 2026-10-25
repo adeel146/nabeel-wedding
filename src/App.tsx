@@ -34,9 +34,8 @@ function MughalArch({ className = '' }: { className?: string }) {
     <path d="M16 655V268C16 175 75 131 136 117C145 65 211 63 280 0C349 63 415 65 424 117C485 131 544 175 544 268V655" stroke="url(#gold)" strokeWidth=".5" opacity=".5" />
     <path d="M56 655V285C56 205 115 166 175 155C176 111 237 106 280 52C323 106 384 111 385 155C445 166 504 205 504 285V655" stroke="url(#gold)" strokeWidth=".5" opacity=".5" />
     {[0, 1].map(side => <g key={side} transform={side ? 'translate(560 0) scale(-1 1)' : ''} stroke="url(#gold)" strokeWidth=".8">
-      <path d="M30 650C95 602 103 559 80 518C63 489 87 462 114 462C146 462 155 499 133 511C114 523 96 501 111 492M31 619C68 603 74 579 64 555M31 577C59 550 51 523 32 512M78 548C115 552 132 536 139 519" />
+      <path d="M30 650C95 602 103 559 80 518C63 489 87 462 114 462C146 462 155 499 133 511C114 523 96 501 111 492M31 619C68 603 74 579 64 555M31 577C59 550 51 523 32 512M78 548C115 552 132 536 139 519M25 330C7 315 6 293 18 283M30 359C54 341 51 322 37 318M30 403C10 389 7 368 20 357" />
       <path d="M30 651C101 643 153 610 160 567C165 534 189 528 206 539C229 554 213 584 196 579C180 574 186 556 196 560M98 630C109 600 128 584 153 584M137 610C166 617 186 602 188 582" />
-      <path d="M25 330C7 315 6 293 18 283M30 359C54 341 51 322 37 318M30 403C10 389 7 368 20 357" />
       <circle cx="111" cy="492" r="4" /><circle cx="196" cy="560" r="4" />
     </g>)}
     <g stroke="url(#gold)" strokeWidth=".8"><path d="M280 73v33m-13-17 13 14 13-14M280 114l-8 11 8 11 8-11Z" /><path d="M220 193h120M247 202h66" opacity=".5" /></g>
@@ -47,7 +46,7 @@ function Botanical({ className = '' }: { className?: string }) {
   return <svg className={`botanical ${className}`} viewBox="0 0 200 280" fill="none" aria-hidden="true"><g stroke="currentColor" strokeWidth=".9">
     <path d="M95 280C100 219 77 136 112 15M97 236C56 216 32 180 26 151M94 196C137 174 159 144 164 111M94 146C60 117 48 80 51 50M102 92C134 75 146 45 145 20" />
     {[0, 1, 2, 3].map(i => <g key={i} transform={`translate(${i % 2 ? 2 : 0},${i * 42})`}><path d="M97 84C69 80 63 57 69 43C88 49 100 63 97 84ZM105 61C127 59 135 44 133 29C114 32 105 43 105 61Z" fill="currentColor" fillOpacity=".09" /></g>)}
-    <path d="M37 178C16 177 6 160 10 143C30 147 39 160 37 178ZM63 211C44 209 35 193 38 178C57 182 66 194 63 211ZM129 173C147 174 164 159 163 144C143 144 132 155 129 173ZM147 145C166 147 184 131 183 115C164 116 151 127 147 145Z" fill="currentColor" fillOpacity=".12" />
+    <path d="M37 178C16 177 6 160 10 143C30 147 39 160 37 178ZM63 211C44 209 35 193 38 178C57 182 66 194 63 211ZM129 173C147 174 164 159 163 144C143 144 132 155 129 173ZM147 145C166 147 184 131 183 115C172 118 157 128 147 145Z" fill="currentColor" fillOpacity=".12" />
   </g></svg>
 }
 
@@ -114,7 +113,7 @@ function CoupleSection({ events }: { events: WeddingEvent[] }) {
 function GuestGreeting({ guest }: { guest: Guest }) {
   return <section className="greeting section-pad" id="greeting">
     <Botanical className="greeting-leaf" />
-    <Reveal><p className="eyebrow"><span className="tiny-line" /> A LITTLE NOTE, JUST FOR YOU <span className="tiny-line" /></p><h2>Dear <em>{guest.name},</em></h2><p className="greeting-main">You are cordially invited to celebrate<br className="desktop-break" /> the wedding of {weddingConfig.groom} &amp; {weddingConfig.bride}.</p><p className="body-copy">{guest.message}</p><div className="greeting-sign"><Heart size={15} strokeWidth={1.3} /><span>Your presence is our most cherished gift.</span></div></Reveal>
+    <Reveal><p className="eyebrow"><span className="tiny-line" /> A LITTLE NOTE, JUST FOR YOU <span className="tiny-line" /></p><h2>Dear <em>{guest.name},</em></h2><p className="greeting-main">You are cordially invited to celebrate the wedding of {weddingConfig.groom} &amp; {weddingConfig.bride}.</p><p className="body-copy">{guest.message}</p><div className="greeting-sign"><Heart size={15} strokeWidth={1.3} /><span>Your presence is our most cherished gift.</span></div></Reveal>
   </section>
 }
 
@@ -137,7 +136,7 @@ function EventCard({ event, index }: { event: WeddingEvent; index: number }) {
   const Icon = eventIcons[event.id as keyof typeof eventIcons]
   return <Reveal delay={index * 0.1} className={`event-card ${event.id}`}>
     <div className="event-art"><div className="event-art-arch" /><Botanical className="event-leaf a" /><Botanical className="event-leaf b" /><span className="event-number">0{index + 1}</span><span lang="ur" dir="rtl" className="event-urdu">{event.urdu}</span><div className="event-symbol"><Icon strokeWidth={0.8} size={44} /></div><p>{event.label}</p></div>
-    <div className="event-body"><p className="eyebrow">{dayFormat.format(new Date(event.date))} · {dateFormat.format(new Date(event.date))}</p><h3>{event.title}</h3><p className="event-subtitle">{event.subtitle}</p><InvitationSize label={event.invitationSize} /><div className="event-details"><p><Clock3 /><span>{event.time}</span></p><p><MapPin /><span>{event.venue}<small>{event.address}</small></span></p></div><div className="event-dress"><span>DRESS NOTE</span>{event.dress}</div><a className="event-map" href={mapUrl(event)} target="_blank" rel="noreferrer">View location <ArrowUpRight size={15} /></a></div>
+    <div className="event-body"><p className="eyebrow">{dayFormat.format(new Date(event.date))} · {dateFormat.format(new Date(event.date))}</p><h3>{event.title}</h3><p className="event-subtitle">{event.subtitle}</p><InvitationSize label={event.invitationSize} /><div className="event-details"><p><Clock3 size={15} />{event.time}</p><p><MapPin size={15} />{event.venue}<small>{event.address}</small></p></div><div className="event-dress"><span>DRESS NOTE</span>{event.dress}</div><a className="event-map" href={mapUrl(event)} target="_blank" rel="noreferrer">View location <ArrowUpRight size={15} /></a></div>
   </Reveal>
 }
 
@@ -155,7 +154,7 @@ function WeddingTimeline({ events }: { events: WeddingEvent[] }) {
 function VenueSection({ events }: { events: WeddingEvent[] }) {
   const [selected, setSelected] = useState(events[0].id)
   const event = events.find(item => item.id === selected) ?? events[0]
-  return <section id="venue" className="venue-section"><div className="venue-visual"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1400&q=85" alt="Warmly lit wedding reception with elegant floral arrangements" loading="lazy" /><div className="venue-image-overlay" /><div className="venue-image-note"><span>BEAUTIFUL PLACES. BEAUTIFUL BEGINNINGS.</span><p>Where our memories<br /><em>will bloom.</em></p></div></div><Reveal className="venue-content"><p className="eyebrow">WE WILL MEET YOU HERE</p><h2>A setting for<br /><em>something special</em></h2><div className="venue-tabs" role="tablist" aria-label="Event venues">{events.map(item => <button key={item.id} id={`tab-${item.id}`} role="tab" aria-selected={selected === item.id} aria-controls="venue-panel" onClick={() => setSelected(item.id)}>{item.title}</button>)}</div><div id="venue-panel" role="tabpanel" aria-labelledby={`tab-${event.id}`}><h3>{event.venue}</h3><p className="body-copy">{event.address}</p><p className="venue-date"><CalendarDays size={15} />{dateFormat.format(new Date(event.date))} · {event.time}</p><InvitationSize label={event.invitationSize} /><a className="primary-button" href={mapUrl(event)} target="_blank" rel="noreferrer">Get directions <ArrowUpRight size={15} /></a></div><p className="venue-note"><MapPin size={13} /> In the heart of Lahore, with all our hearts.</p></Reveal></section>
+  return <section id="venue" className="venue-section"><div className="venue-visual"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1400&q=85" alt="Warmly lit wedding reception with elegant floral arrangements" loading="lazy" /><div className="venue-image-overlay" /><div className="venue-image-note"><span>BEAUTIFUL PLACES. BEAUTIFUL BEGINNINGS.</span><p>Where our memories<br /><em>will bloom.</em></p></div></div><Reveal className="venue-content"><p className="eyebrow">WE WILL MEET YOU HERE</p><h2>A setting for<br /><em>something special</em></h2><div className="venue-tabs" role="tablist" aria-label="Event venues">{events.map(item => <button key={item.id} id={`tab-${item.id}`} role="tab" aria-selected={selected === item.id} aria-controls="venue-panel" onClick={() => setSelected(item.id)}>{item.title}</button>)}</div><div id="venue-panel" role="tabpanel" aria-labelledby={`tab-${event.id}`}><h3>{event.venue}</h3><p>{event.address}</p><p className="venue-date"><CalendarDays size={15} />{dateFormat.format(new Date(event.date))} · {event.time}</p><InvitationSize label={event.invitationSize} /><a className="primary-button" href={mapUrl(event)} target="_blank" rel="noreferrer">Get directions <ArrowUpRight size={15} /></a></div><p className="venue-note"><MapPin size={13} /> In the heart of Lahore, with all our hearts.</p></Reveal></section>
 }
 
 function useBackgroundMusic() {
@@ -174,7 +173,6 @@ function useBackgroundMusic() {
       if (!audioRef.current) {
         const context = new AudioContext()
         audioRef.current = context
-        // An original pentatonic instrumental, synthesized locally without external audio.
         const melody = [293.66, 349.23, 392, 440, 392, 349.23, 293.66, 261.63, 293.66, 392, 349.23, 261.63]
         let note = 0
         const playNote = () => {
@@ -213,7 +211,13 @@ function MusicPlayer({ playing, error, toggle }: ReturnType<typeof useBackground
 }
 
 function Footer() {
-  return <footer><Ornament /><p lang="ar" dir="rtl" className="footer-dua">بَارَكَ اللَّهُ لَكُمَا وَبَارَكَ عَلَيْكُمَا</p><p className="footer-translation">May Allah bless this union with love, mercy, and a lifetime of happiness.</p><h2>With love, <em>the Akram family</em></h2><div className="footer-bottom"><span>{coupleName.toUpperCase()} · DECEMBER 2026</span><span>MADE WITH LOVE, TO BE SHARED WITH LOVE <Heart size={10} /></span></div></footer>
+  return <footer>
+    <Ornament />
+    <p lang="ar" dir="rtl" className="footer-dua">بَارَكَ اللَّهُ لَكُمَا وَبَارَكَ عَلَيْكُمَا</p>
+    <p className="footer-translation">NABEEL WEDS ZAINAB · DECEMBER 2026</p>
+    <p className="footer-message">MADE WITH LOVE, TO BE SHARED WITH LOVE</p>
+    <div className="footer-bottom"><span>December 2026 to November 2026</span></div>
+  </footer>
 }
 
 export function NotFound() {
@@ -231,5 +235,5 @@ export function WeddingInvitation() {
   }, [opened, guest])
   if (!guest) return <NotFound />
   const events = getGuestEvents(guest)
-  return <div key={guest.id}><AnimatePresence>{!opened && <InvitationIntro guest={guest} onBeginOpen={() => void music.start()} onOpen={() => setOpened(true)} />}</AnimatePresence><div inert={!opened}><ScrollEffects enabled={opened} /><Navigation name={guest.name} /><main><CoupleSection events={events} /><GuestGreeting guest={guest} /><Countdown date={events[0].date} /><EventsSection events={events} /><WeddingTimeline events={events} /><VenueSection key={`venue-${guest.id}`} events={events} /></main><Footer /><MusicPlayer {...music} /></div></div>
+  return <div key={guest.id}><AnimatePresence>{!opened && <InvitationIntro guest={guest} onBeginOpen={() => void music.start()} onOpen={() => setOpened(true)} />}</AnimatePresence><div inert={!opened ? 'true' : undefined}><ScrollEffects enabled={opened} /><Navigation name={guest.name} /><main><CoupleSection events={events} /><GuestGreeting guest={guest} /><Countdown date={events[0].date} /><EventsSection events={events} /><WeddingTimeline events={events} /><VenueSection events={events} /></main><Footer /><MusicPlayer {...music} /></div></div>
 }
