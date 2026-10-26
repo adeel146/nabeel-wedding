@@ -136,8 +136,12 @@ export function createProductionHandler({ environment = () => process.env, now =
       if (!authenticated) return reply(response, 401, { error: 'Sign in to access the private dashboard.' })
       if (route === 'api/guests') {
         if (!env.WHATSAPP_CONTACTS_JSON) {
-          console.error('WhatsApp dashboard requires WHATSAPP_CONTACTS_JSON.')
-          return reply(response, 503, { error: 'Private contacts are not configured. Contact the site owner.' })
+          console.warn('WHATSAPP_CONTACTS_JSON is missing. Serving the guest roster without server-loaded phone numbers.')
+          return reply(response, 200, {
+            ...senderPayload({}, false),
+            authenticated: true,
+            contactsWarning: 'Server phone numbers are not configured. All guests are listed; enter numbers below to send, or set WHATSAPP_CONTACTS_JSON in Vercel and redeploy. Phone edits stay in this browser only.',
+          })
         }
         const payload = senderPayload(parseContacts(env.WHATSAPP_CONTACTS_JSON), true)
         return reply(response, 200, { ...payload, authenticated: true })

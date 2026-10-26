@@ -222,6 +222,25 @@ test('logout expires the cookie and protected endpoints reject an unauthenticate
   })).status, 403)
 })
 
+test('missing contacts still return the complete guest list and message with an explicit warning', async t => {
+  for (const contacts of [undefined, '']) {
+    const { send, login } = await fixture(t, { ...syntheticEnv, WHATSAPP_CONTACTS_JSON: contacts })
+    const cookie = await login()
+    const response = await send('/whatsapp/api/guests', { cookie })
+    assert.equal(response.status, 200)
+    assertPrivate(response)
+    const data = JSON.parse(response.body)
+    assert.equal(data.contactsFileFound, false)
+    assert.equal(data.authenticated, true)
+    assert.match(data.contactsWarning, /WHATSAPP_CONTACTS_JSON/)
+    assert.deepEqual(data.guests.map(guest => guest.id).sort(), Object.keys(guests).sort())
+    assert.ok(data.guests.every(guest => guest.phone === ''))
+    assert.match(data.defaultMessage, /\{name\}/)
+    assert.match(data.defaultMessage, /\{link\}/)
+    assert.equal((await send('/whatsapp/api/guests')).status, 401)
+  }
+})
+
 test('missing server secrets fail closed and invalid contacts never leak configuration', async t => {
   for (const env of [
     {}, { ...syntheticEnv, WHATSAPP_PASSWORD: '' },
@@ -235,7 +254,7 @@ test('missing server secrets fail closed and invalid contacts never leak configu
     }
   }
   for (const [contacts, status] of [
-    [undefined, 503], ['{', 500], ['[]', 500],
+    ['{', 500], ['[]', 500],
     ['{"unknown-private-name":"03001234567"}', 500], ['{"2909":"bad-phone"}', 500],
   ]) {
     const { send, login } = await fixture(t, { ...syntheticEnv, WHATSAPP_CONTACTS_JSON: contacts })

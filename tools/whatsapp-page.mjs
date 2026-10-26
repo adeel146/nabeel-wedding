@@ -202,7 +202,11 @@ async function init() {
     location.replace('/whatsapp')
     return
   }
-  if (!response.ok) throw new Error(`Guest list could not be loaded (HTTP ${response.status}).`)
+  if (!response.ok) {
+    const type = response.headers.get('content-type') ?? ''
+    const details = type.includes('application/json') ? await response.json() : null
+    throw new Error(details?.error || `Guest list could not be loaded (HTTP ${response.status})`)
+  }
   const data = await response.json()
   if (data.authenticated) {
     const logout = document.getElementById('logout')
@@ -251,9 +255,9 @@ async function init() {
   }
   searchInput.addEventListener('input', render)
   filterInput.addEventListener('change', render)
-  document.getElementById('notice').textContent = data.contactsFileFound
+  document.getElementById('notice').textContent = data.contactsWarning || (data.contactsFileFound
     ? 'Private contacts loaded. Check phone numbers and the website URL before sending.'
-    : 'No private contacts file found. Enter phone numbers below; edits stay in this browser only.'
+    : 'No private contacts file found. Enter phone numbers below; edits stay in this browser only.')
   const help = element('p', 'hint', 'Pakistan numbers starting 03 are converted to country code 92. For other countries, include the country code.')
   help.id = 'phone-help'
   document.getElementById('guests-heading').after(help)
