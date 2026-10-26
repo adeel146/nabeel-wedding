@@ -134,9 +134,24 @@ Deploy the repository through the existing Vercel Vite project, keeping **dist**
 
 On mobile, open `/whatsapp`, enter the password, tap **Send on WhatsApp**, and press **Send inside WhatsApp**. All authorized users share the same read-only server contacts, but edits, message settings, and marked-sent progress remain **browser-local**, not synchronized across devices. Use a trusted browser profile. **Sign out and clear saved browser data** removes that browser's sender settings and phone edits and expires its cookie; it does not revoke other devices' sessions. The server contacts remain available at the next sign-in.
 
+On a fresh browser or after signing out, production automatically fills the same default message as the local sender: an Assalamualaikum greeting using `{name}`, the couple's names, and the personal invitation `{link}`. The website URL defaults to `https://nabeel-wedding.vercel.app`. No message environment variable is required. Existing custom message settings saved in that browser take precedence; they do not sync from your laptop to your phone.
+
 Before making this internet-facing, configure a **Vercel Firewall rate-limit rule for POST `/whatsapp/login` and POST `/api/whatsapp`** to deter password guessing (for example, ten attempts per IP per minute, subject to your plan's available controls). The application does not claim a durable, cross-instance login rate limiter; in-memory limits would not be reliable on serverless infrastructure. Use a strong, unique shared password; anyone who knows it can view all contacts. Password protection applies only to the sender, not the already-public invitation roster.
 
 After deployment, verify in a private browser that `/whatsapp` shows sign-in, `/whatsapp/api/guests` returns 401 without a session, and correct sign-in loads contacts on mobile. Incorrect passwords must not reveal guest data. Check that signing out blocks subsequent API access. HTTPS is required for the session cookie.
+
+### Adding guests and phone numbers later
+
+Both senders build their guest JSON from **every entry in `guests` in `src/config.js`**, not just IDs with phone numbers. A new configured guest appears automatically after redeploying, even if their number is missing. Missing numbers can be entered in the dashboard; those edits stay in that browser.
+
+For a permanent addition:
+
+1. Add the guest's unique ID, name, events, and numeric/family invitation sizes to `src/config.js`. A phone-number entry alone does not create a guest or an invitation.
+2. Add that same ID and phone-number string to the ignored `whatsapp-contacts.local.json` file for local use, then restart `npm run whatsapp`.
+3. Update `WHATSAPP_CONTACTS_JSON` in Vercel with the latest private contacts JSON for production use.
+4. Push the guest configuration and redeploy, including the updated Production environment variables.
+
+Local contacts files and browser edits are **not automatically synchronized to Vercel**. The contacts JSON can contain only guests with existing canonical IDs; unknown IDs are rejected to avoid sending the wrong invitation. Do not commit the private contacts file.
 
 ## Privacy
 

@@ -4,7 +4,8 @@ import { createServer, request } from 'node:http'
 import { once } from 'node:events'
 import { readFile } from 'node:fs/promises'
 import { createProductionHandler } from '../tools/whatsapp-production.mjs'
-import { guests } from '../src/config.js'
+import { guests, weddingConfig } from '../src/config.js'
+import { personalizedMessage } from '../tools/whatsapp-links.mjs'
 
 const syntheticEnv = {
   WHATSAPP_PASSWORD: 'synthetic-test-password',
@@ -137,6 +138,13 @@ test('successful login unlocks dashboard and exact mapped contacts through rewri
     const data = JSON.parse(response.body)
     assert.equal(data.authenticated, true)
     assert.equal(data.contactsFileFound, true)
+    assert.equal(data.defaultMessage,
+      `Assalamualaikum {name}!\n\nYou are warmly invited to celebrate the wedding of ${weddingConfig.groom} and ${weddingConfig.bride}.\n\nYour personal invitation:\n{link}\n\nWe look forward to celebrating with you!`)
+    const recipient = data.guests.find(guest => guest.id === '2909')
+    const message = personalizedMessage(data.defaultMessage, recipient, 'https://nabeel-wedding.vercel.app')
+    assert.ok(message.includes(`Assalamualaikum ${recipient.name}!`))
+    assert.ok(message.includes('https://nabeel-wedding.vercel.app/invite/2909'))
+    assert.ok(!message.includes('{name}') && !message.includes('{link}'))
     assert.equal(data.guests.length, Object.keys(guests).length)
     assert.equal(data.guests.find(guest => guest.id === '2909').phone, '03001234567')
     assert.ok(data.guests.filter(guest => guest.id !== '2909').every(guest => guest.phone === ''))
@@ -148,6 +156,41 @@ test('successful login unlocks dashboard and exact mapped contacts through rewri
     '/whatsapp/../whatsapp-contacts.local.json', '/whatsapp/whatsapp-production.mjs',
     '/whatsapp/whatsapp-roster.mjs', '/api/whatsapp?path=../whatsapp-contacts.local.json',
   ]) assert.equal((await send(path, { cookie })).status, 404)
+})
+
+test('production includes every configured guest without numbers and picks up future guests and matching contacts', async t => {
+  const { send, login, env } = await fixture(t, { ...syntheticEnv, WHATSAPP_CONTACTS_JSON: '{}' })
+  const cookie = await login()
+  const initial = await send('/whatsapp/api/guests', { cookie })
+  assert.equal(initial.status, 200)
+  const initialGuests = JSON.parse(initial.body).guests
+  assert.deepEqual(initialGuests.map(guest => guest.id).sort(), Object.keys(guests).sort())
+  assert.ok(initialGuests.every(guest => guest.phone === ''))
+
+  const id = 'test-future-guest'
+  assert.equal(Object.hasOwn(guests, id), false)
+  guests[id] = {
+    name: 'Synthetic future guest',
+    events: ['barat'],
+    partySize: { barat: 2 },
+    message: 'Synthetic invitation for a future guest.',
+  }
+  t.after(() => { delete guests[id] })
+
+  const withoutPhone = await send('/whatsapp/api/guests', { cookie })
+  assert.equal(withoutPhone.status, 200)
+  const newGuest = JSON.parse(withoutPhone.body).guests.find(guest => guest.id === id)
+  assert.equal(newGuest.name, guests[id].name)
+  assert.equal(newGuest.phone, '')
+  assert.equal(newGuest.events.length, 1)
+  assert.match(newGuest.events[0], /2 persons/)
+
+  env.WHATSAPP_CONTACTS_JSON = JSON.stringify({ [id]: '+1 (202) 555-0123' })
+  const withPhone = await send('/api/whatsapp?path=api/guests', { cookie })
+  assert.equal(withPhone.status, 200)
+  const updatedGuests = JSON.parse(withPhone.body).guests
+  assert.equal(updatedGuests.length, initialGuests.length + 1)
+  assert.equal(updatedGuests.find(guest => guest.id === id).phone, '+1 (202) 555-0123')
 })
 
 test('tampered, expired and password/secret-rotated cookies cannot fetch contacts', async t => {
