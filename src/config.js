@@ -414,6 +414,24 @@ export const guests = {
     partySize: { mehandi: 'family', barat: 'family', walima: 'family' },
     message: 'We look forward to celebrating these special moments with you.',
   },
+  'temp-saeed': {
+    name: 'Saeed',
+    events: [ 'barat', 'walima'],
+    partySize: { barat: 2, walima: 2 },
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  'temp-naeem': {
+    name: 'Naeem',
+    events: [ 'barat', 'walima'],
+    partySize: { barat: 2, walima: 2 },
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  'temp-Jara': {
+    name: 'Jara',
+    events: [ 'barat', 'walima'],
+    partySize: { barat: 2, walima: 2 },
+    message: 'We look forward to celebrating these special moments with you.',
+  },
 }
 
 export function getGuest(id) {

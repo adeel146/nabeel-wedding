@@ -7,7 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "node --test tests/config.test.js tests/whatsapp.test.js",
+    "test": "node --test tests/config.test.js tests/whatsapp.test.js tests/whatsapp-production.test.js",
     "whatsapp": "node tools/whatsapp-server.mjs"
   },
   "dependencies": {

@@ -55,7 +55,7 @@ Set `partySize` separately for each guest and event: a positive whole number suc
 
 Invitation sizes appear on the assigned event cards, schedule, and selected venue details. They do not grant access to unassigned events or enforce attendance limits.
 
-Rebuild and redeploy after editing guests, then send each guest their own link: `https://YOUR-SITE/invite/your-unique-guest-id`. Unassigned events are absent from their cards, timeline, and venue selector. There is no guest management dashboard or login.
+Rebuild and redeploy after editing guests, then send each guest their own link: `https://YOUR-SITE/invite/your-unique-guest-id`. Unassigned events are absent from their cards, timeline, and venue selector. The sender dashboard below does not edit guest assignments.
 
 ### Temporary IDs awaiting phone numbers
 
@@ -94,7 +94,7 @@ Samina at `/invite/2915` (with family) and Samina at `/invite/temp-samina` (2 pe
 
 ## Private WhatsApp sending page
 
-Run `npm run whatsapp`, then open **http://127.0.0.1:5180** on this computer. This is a separate localhost-only tool, not a route on the public invitation site, and it does not need the Vite development server.
+Run `npm run whatsapp`, then open **http://127.0.0.1:5180** on this computer. This is a separate localhost-only tool that does not need the Vite development server. For password-protected mobile access on Vercel, use the production setup below.
 
 1. Review the **published invitation website home URL**, which defaults to **https://nabeel-wedding.vercel.app**. You can change it if needed. Empty saved URLs and the previous Netlify default automatically use this address; other custom saved URLs are preserved. Localhost links are rejected because guests cannot open your computer's preview.
 2. Review the editable message, keeping `{name}` and `{link}`. Every guest gets their own name and invitation ID; the page shows their event allowances and a message preview.
@@ -108,7 +108,35 @@ The optional **`whatsapp-contacts.local.json`** file in the project root maps in
 
 Phone edits made on the page, the site URL, message, and manually marked sent statuses are saved in this browser's local storage at this exact local address; they do not modify the contacts file or the public roster. Browser data can be cleared or lost, and using another browser, hostname, or port starts separate progress. Do not use this page on a shared browser profile. Storage failures are shown explicitly. Keep a separate private backup of contact updates if needed.
 
-Keep the contacts file, browser data, and this local server private. Do not expose the tool through a tunnel or public reverse proxy. Deploy **only `dist`**, never the repository root. The public site has no sending dashboard or phone numbers. For a different local port, set `WHATSAPP_PORT` before running the tool.
+Keep the contacts file, browser data, and this local server private. Do not expose the local tool through a tunnel or public reverse proxy. For a different local port, set `WHATSAPP_PORT` before running the tool.
+
+### Password-protected Vercel dashboard (mobile and desktop)
+
+The existing Vercel project can serve **https://nabeel-wedding.vercel.app/whatsapp** alongside the invitations. No separate deployment or database is required. The Node function in `api/whatsapp.js` checks the password on the server, issues an eight-hour Secure/HttpOnly/SameSite session cookie, and requires it for the dashboard and contacts API. The login page and stylesheet contain no contacts or password.
+
+Before deploying, add these **server-only environment variables** in **Vercel > Project Settings > Environment Variables**, selecting Production (and Preview only if needed):
+
+| Variable | Value |
+| --- | --- |
+| `WHATSAPP_PASSWORD` | Your chosen shared password. Do not put it in source code. |
+| `WHATSAPP_SESSION_SECRET` | A random secret of at least 32 characters, separate from the password. Generate one with the command below. |
+| `WHATSAPP_CONTACTS_JSON` | Paste the contents of your private `whatsapp-contacts.local.json` file: an object mapping canonical guest IDs to phone-number strings. Use `{}` only if intentionally entering every number manually. |
+
+Generate the session secret locally:
+
+```powershell
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+```
+
+Never prefix these variables with `VITE_`, commit their values, or add contacts to `public`/`dist`. Vercel holds the contacts privately; the function returns them only after successful sign-in. Invalid/missing configuration produces an explicit error, not an unprotected fallback. Contact environment-variable changes require a redeployment, as do password or session-secret changes; rotating either invalidates existing session cookies.
+
+Deploy the repository through the existing Vercel Vite project, keeping **dist** as the static output. Vercel also packages the Node API and the explicitly listed sender assets in `vercel.json`. Do not copy the entire repository into a public static folder. A `dist`-only upload to a non-Vercel static host does **not** include this dashboard. `npm run dev` and `npm run preview` do not emulate Vercel Functions; `npm run whatsapp` continues to provide the original local sender without authentication.
+
+On mobile, open `/whatsapp`, enter the password, tap **Send on WhatsApp**, and press **Send inside WhatsApp**. All authorized users share the same read-only server contacts, but edits, message settings, and marked-sent progress remain **browser-local**, not synchronized across devices. Use a trusted browser profile. **Sign out and clear saved browser data** removes that browser's sender settings and phone edits and expires its cookie; it does not revoke other devices' sessions. The server contacts remain available at the next sign-in.
+
+Before making this internet-facing, configure a **Vercel Firewall rate-limit rule for POST `/whatsapp/login` and POST `/api/whatsapp`** to deter password guessing (for example, ten attempts per IP per minute, subject to your plan's available controls). The application does not claim a durable, cross-instance login rate limiter; in-memory limits would not be reliable on serverless infrastructure. Use a strong, unique shared password; anyone who knows it can view all contacts. Password protection applies only to the sender, not the already-public invitation roster.
+
+After deployment, verify in a private browser that `/whatsapp` shows sign-in, `/whatsapp/api/guests` returns 401 without a session, and correct sign-in loads contacts on mobile. Incorrect passwords must not reveal guest data. Check that signing out blocks subsequent API access. HTTPS is required for the session cookie.
 
 ## Privacy
 
@@ -138,4 +166,4 @@ Deploy the generated `dist` folder to a static host. Configure SPA fallback to `
 
 Use the **Vite** framework preset, build command **`npm run build`**, and output directory **`dist`**. The root `vercel.json` rewrites incoming routes to `index.html`, allowing React Router to handle direct guest links such as `https://nabeel-wedding.vercel.app/invite/4250` and page refreshes. Without this SPA fallback, Vercel returns its own `404 NOT_FOUND` before React can resolve the invitation.
 
-Include `vercel.json` in the deployed revision and redeploy after adding or changing it; an existing deployment will not pick up local edits. Verify the guest link by opening it directly in a new tab. The home page and missing/unknown guest IDs still show the app's invalid-invitation screen, not a default guest card. Only the generated `dist` output is published; keep the private WhatsApp contacts and local sending server out of deployment.
+Include `vercel.json` in the deployed revision and redeploy after adding or changing it; an existing deployment will not pick up local edits. Verify the guest link by opening it directly in a new tab. The home page and missing/unknown guest IDs still show the app's invalid-invitation screen, not a default guest card. The more-specific `/whatsapp` rewrites run before the invitation SPA fallback. Sender assets are packaged privately with the Node function; phone numbers come from the server-only environment variable, never the static output.

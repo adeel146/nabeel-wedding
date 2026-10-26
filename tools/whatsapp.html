@@ -6,16 +6,17 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Private WhatsApp invitation sender</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/whatsapp.css">
-  <script type="module" src="/whatsapp-page.mjs"></script>
+  <link rel="stylesheet" href="./whatsapp.css">
+  <script type="module" src="./whatsapp-page.mjs"></script>
 </head>
 <body>
   <main>
     <header>
-      <p class="eyebrow">LOCAL ONLY / MANUAL SENDING</p>
+      <p class="eyebrow">PRIVATE DASHBOARD / MANUAL SENDING</p>
       <h1>Send your wedding invitations</h1>
       <p>Open each guest's chat, then press <strong>Send inside WhatsApp</strong>. Opening a chat does not send a message.</p>
-      <p class="notice">Keep this page on your computer. Phone numbers are not included in the public invitation website. Shared numbers receive separate personal links.</p>
+      <p class="notice">Use this page on a trusted device. Phone numbers are not included in the public invitation website. Shared numbers receive separate personal links.</p>
+      <button id="logout" type="button" hidden>Sign out and clear saved browser data</button>
     </header>
     <p id="notice" role="status">Loading your guest list...</p>
     <p id="error" role="alert" hidden></p>
@@ -26,7 +27,7 @@
       <p id="site-help" class="hint">Enter your deployed website home URL, not localhost or a guest's invitation link.</p>
       <label for="message">Personalized message</label>
       <textarea id="message" rows="7" aria-describedby="message-help"></textarea>
-      <p id="message-help" class="hint">Keep {name} and {link}; they are replaced separately for each guest. Settings, phone edits, and manually marked sent statuses are remembered in this browser on this local address. Phone edits do not change invitation IDs or your private contacts file.</p>
+      <p id="message-help" class="hint">Keep {name} and {link}; they are replaced separately for each guest. Settings, phone edits, and manually marked sent statuses are remembered in this browser only, not synchronized between devices. Phone edits do not change invitation IDs or the server contacts. Signing out clears saved sender data in this browser.</p>
       <p id="settings-error" role="status"></p>
     </section>
     <section aria-labelledby="guests-heading">

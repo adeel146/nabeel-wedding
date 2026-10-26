@@ -1,6 +1,7 @@
 import { invitationUrl, normalizePhone, normalizeSiteUrl, personalizedMessage, whatsappUrl } from './whatsapp-links.mjs'
 
 const storageKey = 'wedding-whatsapp-sender-v1'
+const senderBase = location.pathname.startsWith('/whatsapp') ? '/whatsapp/' : '/'
 const defaultSiteUrl = 'https://nabeel-wedding.vercel.app'
 const siteInput = document.getElementById('site-url')
 const messageInput = document.getElementById('message')
@@ -196,9 +197,37 @@ function render() {
 }
 
 async function init() {
-  const response = await fetch('/api/guests')
+  const response = await fetch(`${senderBase}api/guests`)
+  if (response.status === 401) {
+    location.replace('/whatsapp')
+    return
+  }
   if (!response.ok) throw new Error(`Guest list could not be loaded (HTTP ${response.status}).`)
   const data = await response.json()
+  if (data.authenticated) {
+    const logout = document.getElementById('logout')
+    logout.hidden = false
+    logout.addEventListener('click', async () => {
+      logout.disabled = true
+      try {
+        const response = await fetch(`${senderBase}logout`, { method: 'POST' })
+        if (!response.ok) throw new Error(`Sign-out failed (HTTP ${response.status}).`)
+        container.replaceChildren()
+        messageInput.value = ''
+        roster = []
+        views.clear()
+        state = { siteUrl: defaultSiteUrl, message: '', phones: {}, sent: {}, opened: {} }
+        localStorage.removeItem(storageKey)
+        location.replace('/whatsapp')
+      } catch (error) {
+        showError(`Could not finish signing out: ${error.message}. Close this tab if you are on a shared device.`)
+        logout.disabled = false
+      }
+    })
+    window.addEventListener('pageshow', event => {
+      if (event.persisted) location.reload()
+    })
+  }
   roster = data.guests
   if (!Array.isArray(roster) || !roster.length) throw new Error('No guests are configured.')
   state.message = data.defaultMessage
@@ -233,5 +262,5 @@ async function init() {
 
 init().catch(error => {
   document.getElementById('notice').textContent = 'Sending page is unavailable.'
-  showError(`Unable to start the sending page: ${error.message}. Check the local server terminal and reload.`)
+  showError(`Unable to start the sending page: ${error.message}. Reload or ask the site owner to check the server configuration.`)
 })

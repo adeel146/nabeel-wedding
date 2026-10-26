@@ -1,6 +1,23 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/whatsapp.js": {
+      "includeFiles": "tools/{whatsapp.html,whatsapp.css,whatsapp-page.mjs,whatsapp-links.mjs,whatsapp-login.html,whatsapp-login.mjs}"
+    }
+  },
   "rewrites": [
+    {
+      "source": "/whatsapp",
+      "destination": "/api/whatsapp?path="
+    },
+    {
+      "source": "/whatsapp/:path*",
+      "destination": "/api/whatsapp?path=:path*"
+    },
+    {
+      "source": "/api/whatsapp",
+      "destination": "/api/whatsapp"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

@@ -170,7 +170,7 @@ test('local HTTP server serves only its public local assets with privacy headers
   }
 })
 
-test('missing private file yields the complete 60-entry roster with empty numbers', async t => {
+test('missing private file yields the complete configured roster with empty numbers', async t => {
   const { port } = await localServer(t)
   const response = await httpRequest(port, '/api/guests')
   assert.equal(response.status, 200)
@@ -178,8 +178,8 @@ test('missing private file yields the complete 60-entry roster with empty number
   assertPrivacyHeaders(response.headers)
   const payload = JSON.parse(response.body)
   assert.equal(payload.contactsFileFound, false)
-  assert.equal(payload.guests.length, 60)
-  assert.equal(new Set(payload.guests.map(guest => guest.id)).size, 60)
+  assert.equal(payload.guests.length, Object.keys(guests).length)
+  assert.equal(new Set(payload.guests.map(guest => guest.id)).size, Object.keys(guests).length)
   assert.deepEqual(payload.guests.map(guest => guest.id).sort(), Object.keys(guests).sort())
   assert.match(payload.defaultMessage, /\{name\}/)
   assert.match(payload.defaultMessage, /\{link\}/)
@@ -200,7 +200,7 @@ test('synthetic private contacts map by exact invitation ID, not roster position
   assert.equal(response.status, 200)
   const payload = JSON.parse(response.body)
   assert.equal(payload.contactsFileFound, true)
-  assert.equal(payload.guests.length, 60)
+  assert.equal(payload.guests.length, Object.keys(guests).length)
   for (const guest of payload.guests) assert.equal(guest.phone, contacts[guest.id] ?? '')
 })
 

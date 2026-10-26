@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Sign in to the invitation sender</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./whatsapp.css">
+  <script type="module" src="./login.mjs"></script>
+</head>
+<body>
+  <main>
+    <h1>Private invitation sender</h1>
+    <p>Sign in to open your guest list and prepare WhatsApp messages.</p>
+    <section>
+      <form id="login">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256">
+        <p id="error" role="alert" hidden></p>
+        <p><button type="submit">Sign in</button></p>
+      </form>
+      <p class="hint">Use a trusted device. Your session lasts up to eight hours. Press Send inside WhatsApp for each invitation.</p>
+    </section>
+  </main>
+</body>
+</html>
