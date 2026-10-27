@@ -73,6 +73,32 @@ This hides both numeric counts and "With family" on the invitation and WhatsApp 
 
 Rebuild and redeploy after editing guests, then send each guest their own link: `https://YOUR-SITE/invite/your-unique-guest-id`. Unassigned events are absent from their cards, timeline, and venue selector. The sender dashboard below does not edit guest assignments.
 
+### Hide guest personalization through the invitation URL
+
+Append `?skipPersonalization=true` to an existing invitation link:
+
+```text
+https://YOUR-SITE/invite/3232?skipPersonalization=true
+```
+
+This single option hides the guest's name (including "Especially for" and the personalized header), their personal message, and all person/family labels on the invitation. The greeting uses generic invitation wording instead. The guest ID is still required, and only that guest's assigned events are shown. Existing guest configuration and the WhatsApp sender message/preview are unchanged.
+
+Only the exact value `true` enables this mode. Remove the parameter or use `skipPersonalization=false` to restore normal personalization; a configured `skipPersons: true` continues to hide person labels. If the link already has query parameters, append `&skipPersonalization=true`.
+
+### Hide selected events through the invitation URL
+
+Use `hideEvents` with one event ID or a comma-separated list:
+
+```text
+https://YOUR-SITE/invite/2909?hideEvents=mehandi
+https://YOUR-SITE/invite/2909?hideEvents=barat,walima
+https://YOUR-SITE/invite/2909?skipPersonalization=true&hideEvents=mehandi,barat
+```
+
+Event IDs are `mehandi`, `barat`, and `walima`. Hidden events are removed from cards, schedule, venue tabs, hero dates, and the countdown selection. The countdown targets the first remaining assigned event. Repeated parameters (such as `hideEvents=mehandi&hideEvents=barat`) also work; surrounding spaces and case are ignored. Unknown or empty values have no effect.
+
+This only hides events already assigned to the guest; it never grants other events or changes saved configuration. Removing the parameter restores their assigned events. If every assigned event is hidden, the page displays "No events to display" instead of an invitation with an invalid countdown.
+
 ### Temporary IDs awaiting phone numbers
 
 Full phone numbers are not stored in the public guest configuration. Shared endings cannot identify separate invitations, so every member with a shared or missing number has a distinct `temp-...` ID. The shared numeric IDs `8135`, `2256`, and `1325` do not resolve to an invitation.

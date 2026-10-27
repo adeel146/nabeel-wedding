@@ -518,9 +518,21 @@ export const guests = {
   },
 }
 
-export function getGuest(id) {
+export function getGuest(id, search = '') {
   const key = id === 'guest-001' || id === 'muhammad-arslan' ? 'temp-muhammad-arslan' : id
-  return Object.hasOwn(guests, key) ? { ...guests[key], id: key } : null
+  if (!Object.hasOwn(guests, key)) return null
+  const guest = guests[key]
+  const params = new URLSearchParams(search)
+  const skipPersonalization = params.get('skipPersonalization') === 'true'
+  const hiddenEvents = new Set(params.getAll('hideEvents')
+    .flatMap(value => value.split(',').map(event => event.trim().toLowerCase())))
+  return {
+    ...guest,
+    events: guest.events.filter(event => !hiddenEvents.has(event)),
+    id: key,
+    skipPersonalization,
+    skipPersons: skipPersonalization ? true : guest.skipPersons,
+  }
 }
 
 /** @param {number | 'family' | undefined} size */

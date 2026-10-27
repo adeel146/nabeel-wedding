@@ -52,6 +52,64 @@ test('readable guest alias resolves to the correct canonical ID', () => {
     assert.equal(getGuest(id).name, 'Muhammad Arslan')
   }
 })
+
+test('skipPersonalization query hides person labels without changing guest assignments or configuration', () => {
+  for (const id of ['3232', '2909', 'guest-001']) {
+    const original = getGuest(id)
+    const guest = getGuest(id, '?skipPersonalization=true')
+    assert.equal(guest.skipPersonalization, true)
+    assert.equal(guest.skipPersons, true)
+    assert.equal(guest.id, original.id)
+    assert.deepEqual(guest.events, original.events)
+    assert.deepEqual(guest.partySize, original.partySize)
+    assert.ok(getGuestEvents(guest).every(event => event.invitationSize === null))
+    assert.deepEqual(getGuest(id), original)
+    assert.equal(Object.hasOwn(guests[guest.id], 'skipPersonalization'), false)
+  }
+})
+
+test('only explicit skipPersonalization=true enables generic presentation and invalid IDs stay invalid', () => {
+  for (const query of ['', '?skipPersonalization=false', '?skipPersonalization=1', '?skipPersonalization', '?unrelated=true']) {
+    const guest = getGuest('3232', query)
+    assert.equal(guest.skipPersonalization, false)
+    assert.equal(getGuestEvents(guest)[0].invitationSize, '1 person')
+    assert.equal(getGuest('9196', query).skipPersons, true)
+  }
+  for (const id of [undefined, '', 'unknown', '__proto__']) {
+    assert.equal(getGuest(id, '?skipPersonalization=true'), null)
+  }
+  assert.equal(getGuest('3232', '?source=whatsapp&skipPersonalization=true').skipPersonalization, true)
+})
+test('hideEvents removes selected events while preserving assignment order and stored configuration', () => {
+  const original = getGuest('2909')
+  for (const event of ['mehandi', 'barat', 'walima']) {
+    const guest = getGuest('2909', `?hideEvents=${event}`)
+    assert.deepEqual(guest.events, original.events.filter(id => id !== event))
+    assert.deepEqual(getGuestEvents(guest).map(item => item.id), guest.events)
+    assert.deepEqual(guest.partySize, original.partySize)
+  }
+  assert.deepEqual(getGuest('2909'), original)
+  assert.deepEqual(getGuest('2909', '?hideEvents=mehandi,barat').events, ['walima'])
+  assert.deepEqual(getGuest('guest-001', '?hideEvents=mehandi&hideEvents=barat').events, ['walima'])
+})
+
+test('hideEvents supports empty, duplicate, unknown and case-insensitive values without granting events', () => {
+  for (const query of ['', '?hideEvents=', '?hideEvents=unknown']) {
+    assert.deepEqual(getGuest('3232', query).events, ['barat', 'walima'])
+  }
+  assert.deepEqual(getGuest('3232', '?hideEvents=mehandi').events, ['barat', 'walima'])
+  assert.deepEqual(getGuest('2909', '?hideEvents=%20Mehandi%20,MEHANDI,barat,,unknown').events, ['walima'])
+  assert.equal(getGuest('unknown', '?hideEvents=mehandi'), null)
+})
+
+test('hideEvents combines with skipPersonalization and allows an explicit empty event list', () => {
+  const guest = getGuest('3232', '?skipPersonalization=true&hideEvents=barat')
+  assert.equal(guest.skipPersonalization, true)
+  assert.deepEqual(getGuestEvents(guest).map(event => [event.id, event.invitationSize]), [['walima', null]])
+  assert.deepEqual(getGuestEvents(getGuest('3232', '?hideEvents=barat,walima')), [])
+  assert.deepEqual(getGuestEvents(getGuest('2909', '?hideEvents=mehandi,barat,walima')), [])
+})
+
 test('every venue has a safe correctly encoded Maps link and timezone-aware date', () => {
   for (const event of Object.values(weddingConfig.events)) {
     const url = new URL(mapUrl(event))

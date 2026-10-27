@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowDown, ArrowUpRight, CalendarDays, Clock3, Flower2, Heart, MapPin, Menu, Music2, Pause, Sparkles, UsersRound, X } from 'lucide-react'
 import { getGuest, getGuestEvents, mapUrl, weddingConfig } from './config'
@@ -62,7 +62,7 @@ function InvitationIntro({ guest, onOpen, onBeginOpen }: { guest: Guest; onOpen:
     const timer = setTimeout(onOpen, reduced ? 20 : 1000)
     return () => clearTimeout(timer)
   }, [opening, onOpen, reduced])
-  return <motion.div className="intro" exit={{ opacity: 0, scale: 1.04 }} transition={{ duration: 0.8 }} role="dialog" aria-modal="true" aria-label="Your personal wedding invitation">
+  return <motion.div className="intro" exit={{ opacity: 0, scale: 1.04 }} transition={{ duration: 0.8 }} role="dialog" aria-modal="true" aria-label={guest.skipPersonalization ? 'Your wedding invitation' : 'Your personal wedding invitation'}>
     <Botanical className="intro-leaf left" /><Botanical className="intro-leaf right" />
     <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="eyebrow">SOME MOMENTS ARE MEANT TO BE SHARED</motion.p>
     <div className={`envelope ${opening ? 'opening' : ''}`}>
@@ -70,20 +70,20 @@ function InvitationIntro({ guest, onOpen, onBeginOpen }: { guest: Guest; onOpen:
       <div className="envelope-flap" /><div className="envelope-front" />
       <button className="wax-seal" onClick={beginOpening} disabled={opening} aria-label="Open your invitation"><span>N</span></button>
     </div>
-    <p className="intro-for">Especially for <span>{guest.name}</span></p>
+    {!guest.skipPersonalization && <p className="intro-for">Especially for <span>{guest.name}</span></p>}
     <button autoFocus className="intro-open" onClick={beginOpening} disabled={opening}>{opening ? 'A beautiful beginning awaits…' : 'Open your invitation'} {!opening && <ArrowUpRight size={16} />}</button>
     <p className="intro-note">WITH LOVE, FROM THE AKRAM FAMILY</p>
   </motion.div>
 }
 
-function Navigation({ name }: { name: string }) {
+function Navigation({ guest }: { guest: Guest }) {
   const [open, setOpen] = useState(false)
   return <header className="site-header">
     <a href="#home" className="brand" aria-label={`${coupleName} home`}>N<span className="brand-star">✦</span><span className="brand-caption">THE WEDDING INVITATION</span></a>
     <nav aria-label="Main navigation" className={open ? 'nav open' : 'nav'}>
       {['Home', 'Events', 'Schedule', 'Venue'].map(item => <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setOpen(false)}>{item}</a>)}
     </nav>
-    <span className="header-personal"><span className="online-dot" /> An invitation for {name.split(' ')[0]}</span>
+    {!guest.skipPersonalization && <span className="header-personal"><span className="online-dot" /> An invitation for {guest.name.split(' ')[0]}</span>}
     <button className="menu-button" aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
   </header>
 }
@@ -113,7 +113,7 @@ function CoupleSection({ events }: { events: WeddingEvent[] }) {
 function GuestGreeting({ guest }: { guest: Guest }) {
   return <section className="greeting section-pad" id="greeting">
     <Botanical className="greeting-leaf" />
-    <Reveal><p className="eyebrow"><span className="tiny-line" /> A LITTLE NOTE, JUST FOR YOU <span className="tiny-line" /></p><h2>Dear <em>{guest.name},</em></h2><p className="greeting-main">You are cordially invited to celebrate the wedding of {weddingConfig.groom} &amp; {weddingConfig.bride}.</p><p className="body-copy">{guest.message}</p><div className="greeting-sign"><Heart size={15} strokeWidth={1.3} /><span>Your presence is our most cherished gift.</span></div></Reveal>
+    <Reveal><p className="eyebrow"><span className="tiny-line" /> {guest.skipPersonalization ? 'JOIN OUR CELEBRATION' : 'A LITTLE NOTE, JUST FOR YOU'} <span className="tiny-line" /></p><h2>{guest.skipPersonalization ? <>An invitation to <em>celebrate</em></> : <>Dear <em>{guest.name},</em></>}</h2><p className="greeting-main">You are cordially invited to celebrate the wedding of {weddingConfig.groom} &amp; {weddingConfig.bride}.</p>{!guest.skipPersonalization && <p className="body-copy">{guest.message}</p>}<div className="greeting-sign"><Heart size={15} strokeWidth={1.3} /><span>Your presence is our most cherished gift.</span></div></Reveal>
   </section>
 }
 
@@ -152,8 +152,9 @@ function WeddingTimeline({ events }: { events: WeddingEvent[] }) {
 }
 
 function VenueSection({ events }: { events: WeddingEvent[] }) {
-  const [selected, setSelected] = useState(events[0].id)
-  const event = events.find(item => item.id === selected) ?? events[0]
+  const [requested, setSelected] = useState(events[0].id)
+  const event = events.find(item => item.id === requested) ?? events[0]
+  const selected = event.id
   return <section id="venue" className="venue-section"><div className="venue-visual"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1400&q=85" alt="Warmly lit wedding reception with elegant floral arrangements" loading="lazy" /><div className="venue-image-overlay" /><div className="venue-image-note"><span>BEAUTIFUL PLACES. BEAUTIFUL BEGINNINGS.</span><p>Where our memories<br /><em>will bloom.</em></p></div></div><Reveal className="venue-content"><p className="eyebrow">WE WILL MEET YOU HERE</p><h2>A setting for<br /><em>something special</em></h2><div className="venue-tabs" role="tablist" aria-label="Event venues">{events.map(item => <button key={item.id} id={`tab-${item.id}`} role="tab" aria-selected={selected === item.id} aria-controls="venue-panel" onClick={() => setSelected(item.id)}>{item.title}</button>)}</div><div id="venue-panel" role="tabpanel" aria-labelledby={`tab-${event.id}`}><h3>{event.venue}</h3><p>{event.address}</p><p className="venue-date"><CalendarDays size={15} />{dateFormat.format(new Date(event.date))} · {event.time}</p><InvitationSize label={event.invitationSize} /><a className="primary-button" href={mapUrl(event)} target="_blank" rel="noreferrer">Get directions <ArrowUpRight size={15} /></a></div><p className="venue-note"><MapPin size={13} /> In the heart of Lahore, with all our hearts.</p></Reveal></section>
 }
 
@@ -220,14 +221,16 @@ export function NotFound() {
 
 export function WeddingInvitation() {
   const { guestId } = useParams()
-  const guest = guestId ? getGuest(guestId) : null
+  const [searchParams] = useSearchParams()
+  const guest = guestId ? getGuest(guestId, searchParams.toString()) : null
+  const events = guest ? getGuestEvents(guest) : []
   const [opened, setOpened] = useState(false)
   const music = useBackgroundMusic()
   useEffect(() => {
-    document.body.style.overflow = opened || !guest ? '' : 'hidden'
+    document.body.style.overflow = opened || !events.length ? '' : 'hidden'
     return () => { document.body.style.overflow = '' }
-  }, [opened, guest])
+  }, [opened, events.length])
   if (!guest) return <NotFound />
-  const events = getGuestEvents(guest)
-  return <div key={guest.id}><AnimatePresence>{!opened && <InvitationIntro guest={guest} onBeginOpen={() => void music.start()} onOpen={() => setOpened(true)} />}</AnimatePresence><div inert={!opened}><ScrollEffects enabled={opened} /><Navigation name={guest.name} /><main><CoupleSection events={events} /><GuestGreeting guest={guest} /><Countdown date={events[0].date} /><EventsSection events={events} /><WeddingTimeline events={events} /><VenueSection events={events} /></main><Footer /><MusicPlayer {...music} /></div></div>
+  if (!events.length) return <main className="not-found"><Flower2 size={40} strokeWidth={1} /><p className="eyebrow">THE WEDDING INVITATION</p><h1>No events to <em>display.</em></h1><p>All events assigned to this invitation are hidden by the link options. Remove the hideEvents query parameter to view your invitation.</p></main>
+  return <div key={guest.id}><AnimatePresence>{!opened && <InvitationIntro guest={guest} onBeginOpen={() => void music.start()} onOpen={() => setOpened(true)} />}</AnimatePresence><div inert={!opened}><ScrollEffects enabled={opened} /><Navigation guest={guest} /><main><CoupleSection events={events} /><GuestGreeting guest={guest} /><Countdown date={events[0].date} /><EventsSection events={events} /><WeddingTimeline events={events} /><VenueSection events={events} /></main><Footer /><MusicPlayer {...music} /></div></div>
 }
