@@ -521,18 +521,39 @@ export const guests = {
 export function getGuest(id, search = '') {
   const key = id === 'guest-001' || id === 'muhammad-arslan' ? 'temp-muhammad-arslan' : id
   if (!Object.hasOwn(guests, key)) return null
-  const guest = guests[key]
+  return applyInvitationOptions(guests[key], key, search)
+}
+
+/** @param {GuestConfig} guest @param {string} id @param {string} search */
+function applyInvitationOptions(guest, id, search, generic = false) {
   const params = new URLSearchParams(search)
-  const skipPersonalization = params.get('skipPersonalization') === 'true'
+  const skipPersonalization = generic || params.get('skipPersonalization') === 'true'
   const hiddenEvents = new Set(params.getAll('hideEvents')
     .flatMap(value => value.split(',').map(event => event.trim().toLowerCase())))
   return {
     ...guest,
     events: guest.events.filter(event => !hiddenEvents.has(event)),
-    id: key,
+    id,
     skipPersonalization,
     skipPersons: skipPersonalization ? true : guest.skipPersons,
   }
+}
+
+export function getPublicInvitation(pathname, search = '') {
+  const params = new URLSearchParams(search)
+  if (pathname !== '/') {
+    const pathOptions = pathname.replace(/^\/|\/$/g, '')
+    if (pathOptions.includes('/')) return null
+    const entries = [...new URLSearchParams(pathOptions)]
+    if (!entries.length || entries.some(([key]) => key !== 'skipPersonalization' && key !== 'hideEvents')) return null
+    for (const [key, value] of entries) params.append(key, value)
+  }
+  if (params.get('skipPersonalization') !== 'true' && !params.has('hideEvents')) return null
+  return applyInvitationOptions({
+    name: '',
+    message: '',
+    events: ['mehandi', 'barat', 'walima'],
+  }, 'generic', params.toString(), true)
 }
 
 /** @param {number | 'family' | undefined} size */

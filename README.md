@@ -28,7 +28,7 @@ The roster contains 77 members with their supplied event assignments: 49 use uni
 
 The explicit links `/invite/guest-001` and `/invite/muhammad-arslan` remain aliases for Muhammad Arslan's invitation. The home page `/` does not open any guest's card.
 
-Missing IDs (including `/` and `/invite`) and unknown invitations show an explicit invalid-link screen rather than another guest's invitation. There is no default or sample invitation.
+Plain `/`, `/invite`, and unknown invitations show an explicit invalid-link screen rather than another guest's invitation. Explicit no-guest option links open a generic invitation as described below.
 
 ## Personalize
 
@@ -81,7 +81,7 @@ Append `?skipPersonalization=true` to an existing invitation link:
 https://YOUR-SITE/invite/3232?skipPersonalization=true
 ```
 
-This single option hides the guest's name (including "Especially for" and the personalized header), their personal message, and all person/family labels on the invitation. The greeting uses generic invitation wording instead. The guest ID is still required, and only that guest's assigned events are shown. Existing guest configuration and the WhatsApp sender message/preview are unchanged.
+This single option hides the guest's name (including "Especially for" and the personalized header), their personal message, and all person/family labels on the invitation. The greeting uses generic invitation wording instead. On a guest link, only that guest's assigned events are shown. Existing guest configuration and the WhatsApp sender message/preview are unchanged.
 
 Only the exact value `true` enables this mode. Remove the parameter or use `skipPersonalization=false` to restore normal personalization; a configured `skipPersons: true` continues to hide person labels. If the link already has query parameters, append `&skipPersonalization=true`.
 
@@ -98,6 +98,21 @@ https://YOUR-SITE/invite/2909?skipPersonalization=true&hideEvents=mehandi,barat
 Event IDs are `mehandi`, `barat`, and `walima`. Hidden events are removed from cards, schedule, venue tabs, hero dates, and the countdown selection. The countdown targets the first remaining assigned event. Repeated parameters (such as `hideEvents=mehandi&hideEvents=barat`) also work; surrounding spaces and case are ignored. Unknown or empty values have no effect.
 
 This only hides events already assigned to the guest; it never grants other events or changes saved configuration. Removing the parameter restores their assigned events. If every assigned event is hidden, the page displays "No events to display" instead of an invitation with an invalid countdown.
+
+### Generic invitations without a guest ID
+
+Both standard query links and path-style option links are supported:
+
+```text
+https://nabeel-wedding.vercel.app/?skipPersonalization=true
+https://nabeel-wedding.vercel.app/skipPersonalization=true
+https://nabeel-wedding.vercel.app/?hideEvents=barat
+https://nabeel-wedding.vercel.app/hideEvents=barat
+https://nabeel-wedding.vercel.app/?skipPersonalization=true&hideEvents=mehandi,barat
+https://nabeel-wedding.vercel.app/skipPersonalization=true&hideEvents=mehandi,barat
+```
+
+These links start with all three events and always hide guest names, personalized messages, and person/family labels, including when only `hideEvents` is supplied. They do not use any roster member's identity. `hideEvents` removes selected events throughout the page; hiding all three shows "No events to display". Plain `/` without these options remains an invalid-link screen, as do unknown guest IDs and unrelated paths.
 
 ### Temporary IDs awaiting phone numbers
 

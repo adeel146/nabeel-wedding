@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { formatPartySize, getGuest, getGuestEvents, guests, mapUrl, weddingConfig } from '../src/config.js'
+import { formatPartySize, getGuest, getGuestEvents, getPublicInvitation, guests, mapUrl, weddingConfig } from '../src/config.js'
 
 const baratOnlyGuest = {
   name: 'Test Guest',
@@ -108,6 +108,38 @@ test('hideEvents combines with skipPersonalization and allows an explicit empty 
   assert.deepEqual(getGuestEvents(guest).map(event => [event.id, event.invitationSize]), [['walima', null]])
   assert.deepEqual(getGuestEvents(getGuest('3232', '?hideEvents=barat,walima')), [])
   assert.deepEqual(getGuestEvents(getGuest('2909', '?hideEvents=mehandi,barat,walima')), [])
+})
+
+test('public invitations support path and query options without any guest identity', () => {
+  for (const [path, search, expected] of [
+    ['/', '?skipPersonalization=true', ['mehandi', 'barat', 'walima']],
+    ['/skipPersonalization=true', '', ['mehandi', 'barat', 'walima']],
+    ['/', '?hideEvents=barat', ['mehandi', 'walima']],
+    ['/hideEvents=barat', '', ['mehandi', 'walima']],
+    ['/skipPersonalization=true&hideEvents=mehandi,barat', '', ['walima']],
+    ['/skipPersonalization=true', '?hideEvents=mehandi,barat', ['walima']],
+    ['/hideEvents=mehandi%2Cbarat/', '', ['walima']],
+    ['/', '?hideEvents=mehandi,barat,walima', []],
+  ]) {
+    const guest = getPublicInvitation(path, search)
+    assert.equal(guest.id, 'generic')
+    assert.equal(guest.name, '')
+    assert.equal(guest.message, '')
+    assert.equal(guest.skipPersonalization, true)
+    assert.equal(guest.skipPersons, true)
+    assert.deepEqual(guest.events, expected)
+    assert.ok(getGuestEvents(guest).every(event => event.invitationSize === null))
+  }
+})
+
+test('public invitations do not turn missing or unrelated links into a guest invitation', () => {
+  for (const [path, search] of [
+    ['/', ''], ['/', '?source=whatsapp'], ['/', '?skipPersonalization=false'],
+    ['/unknown', '?skipPersonalization=true'], ['/invite', ''],
+    ['/unknown/path', '?hideEvents=barat'], ['/unknown=true', '?hideEvents=barat'],
+  ]) assert.equal(getPublicInvitation(path, search), null)
+  assert.equal(getGuest('unknown', '?skipPersonalization=true'), null)
+  assert.equal(getGuest('2909').name, 'Muhammad Sarfraz')
 })
 
 test('every venue has a safe correctly encoded Maps link and timezone-aware date', () => {

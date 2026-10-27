@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowDown, ArrowUpRight, CalendarDays, Clock3, Flower2, Heart, MapPin, Menu, Music2, Pause, Sparkles, UsersRound, X } from 'lucide-react'
-import { getGuest, getGuestEvents, mapUrl, weddingConfig } from './config'
+import { getGuest, getGuestEvents, getPublicInvitation, mapUrl, weddingConfig } from './config'
 import { ScrollEffects } from './ScrollEffects'
 import { useReducedMotion } from './useReducedMotion'
 
@@ -221,8 +221,9 @@ export function NotFound() {
 
 export function WeddingInvitation() {
   const { guestId } = useParams()
+  const { pathname } = useLocation()
   const [searchParams] = useSearchParams()
-  const guest = guestId ? getGuest(guestId, searchParams.toString()) : null
+  const guest = guestId ? getGuest(guestId, searchParams.toString()) : getPublicInvitation(pathname, searchParams.toString())
   const events = guest ? getGuestEvents(guest) : []
   const [opened, setOpened] = useState(false)
   const music = useBackgroundMusic()
