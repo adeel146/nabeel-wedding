@@ -399,7 +399,7 @@ export const guests = {
   '9561': {
     name: 'Palwasha Asim Sethi',
     events: ['mehandi', 'barat', 'walima'],
-    partySize: { mehandi: 'family', barat: 2, walima: 'family' },
+    partySize: { mehandi: 'family', barat: 'family', walima: 'family' },
     message: 'We look forward to celebrating these special moments with you.',
   },
   '3336': {
@@ -416,19 +416,19 @@ export const guests = {
   },
   'temp-saeed': {
     name: 'Saeed',
-    events: [ 'barat', 'walima'],
+    events: ['barat', 'walima'],
     partySize: { barat: 2, walima: 2 },
     message: 'We look forward to celebrating these special moments with you.',
   },
   'temp-naeem': {
     name: 'Naeem',
-    events: [ 'barat', 'walima'],
+    events: ['barat', 'walima'],
     partySize: { barat: 2, walima: 2 },
     message: 'We look forward to celebrating these special moments with you.',
   },
   'temp-Jara': {
     name: 'Jara',
-    events: [ 'barat', 'walima'],
+    events: ['barat', 'walima'],
     partySize: { barat: 2, walima: 2 },
     message: 'We look forward to celebrating these special moments with you.',
   },
