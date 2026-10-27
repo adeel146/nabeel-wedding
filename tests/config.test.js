@@ -90,6 +90,34 @@ test('guest-specific sizes do not mutate shared events or another invitation', (
   assert.equal(Object.hasOwn(weddingConfig.events.barat, 'invitationSize'), false)
 })
 
+test('skipPersons hides numeric and family labels without changing assigned events or stored sizes', () => {
+  const guest = {
+    ...baratOnlyGuest,
+    events: ['barat', 'walima'],
+    partySize: { barat: 2, walima: 'family' },
+    skipPersons: true,
+  }
+  assert.deepEqual(getGuestEvents(guest).map(event => [event.id, event.invitationSize]), [
+    ['barat', null],
+    ['walima', null],
+  ])
+  assert.deepEqual(guest.partySize, { barat: 2, walima: 'family' })
+  assert.deepEqual(getGuestEvents({ ...guest, skipPersons: false }).map(event => event.invitationSize),
+    ['2 persons', 'With family'])
+  assert.equal(getGuestEvents(baratOnlyGuest)[0].invitationSize, '2 persons')
+  assert.equal(getGuestEvents({ ...baratOnlyGuest, skipPersons: true, partySize: undefined })[0].invitationSize, null)
+  assert.equal(Object.hasOwn(weddingConfig.events.barat, 'invitationSize'), false)
+})
+
+test('skipPersons requires a boolean and does not bypass invalid party size validation', () => {
+  for (const skipPersons of ['true', 'false', 0, 1, null]) {
+    assert.throws(() => getGuestEvents({ ...baratOnlyGuest, skipPersons }), /skipPersons must be true or false/)
+  }
+  assert.throws(() => getGuestEvents({
+    ...baratOnlyGuest, skipPersons: true, partySize: { barat: 0 },
+  }), RangeError)
+})
+
 test('invitation size accepts positive whole counts or family and rejects invalid values', () => {
   assert.equal(formatPartySize(1), '1 person')
   assert.equal(formatPartySize(2), '2 persons')
@@ -165,6 +193,9 @@ const twoPersonsWithoutMehandi = [
   ['7025', 'Zulifqar Ali'],
   ['4407', 'Khaliq'],
   ['6664', 'Muhammad shafique'],
+  ['temp-saeed', 'Saeed'],
+  ['temp-naeem', 'Naeem'],
+  ['temp-Jara', 'Jara'],
 ]
 const mixedFamilyGuests = [
   ['9561', 'Palwasha Asim Sethi'],
@@ -178,9 +209,27 @@ const expectedRoster = [
   ...mixedFamilyGuests.map(([id, name]) => ({ id, name, sizes: ['family', 2, 'family'] })),
 ]
 
-test('all 60 supplied members have their exact name, unique ID, assigned events, and party sizes', () => {
-  assert.equal(expectedRoster.length, 60)
-  assert.deepEqual(Object.keys(guests).sort(), expectedRoster.map(guest => guest.id).sort())
+const skipPersonsGuests = [
+  ['9196', 'Shehryar'],
+  ['2468', 'Mehran'],
+  ['8290', 'Sohaib'],
+  ['9874', 'Amir'],
+  ['6475', 'Hassan'],
+  ['temp-faraz', 'Faraz'],
+  ['3059', 'Hamza Aman'],
+  ['4800', 'Faisal'],
+  ['8815', 'Zubair'],
+  ['5562', 'Ahad'],
+  ['1408', 'Shahbaz'],
+  ['3211', 'Qaiser'],
+  ['6102', 'Ahmad Raza'],
+  ['4415', 'Maqbool'],
+]
+
+test('all supplied members have their exact name, unique ID, assigned events, and party sizes', () => {
+  assert.equal(expectedRoster.length + skipPersonsGuests.length, 77)
+  assert.deepEqual(Object.keys(guests).sort(),
+    [...expectedRoster.map(guest => guest.id), ...skipPersonsGuests.map(([id]) => id)].sort())
   for (const { id, name, sizes } of expectedRoster) {
     const guest = getGuest(id)
     assert.equal(guest.name, name, id)
@@ -193,10 +242,23 @@ test('all 60 supplied members have their exact name, unique ID, assigned events,
   }
 })
 
+test('all 14 new members receive every event with person labels hidden', () => {
+  assert.equal(skipPersonsGuests.length, 14)
+  for (const [id, name] of skipPersonsGuests) {
+    const guest = getGuest(id)
+    assert.equal(guest.name, name, id)
+    assert.equal(guest.skipPersons, true, id)
+    assert.deepEqual(guest.events, ['mehandi', 'barat', 'walima'], id)
+    assert.deepEqual(getGuestEvents(guest).map(event => [event.id, event.invitationSize]), [
+      ['mehandi', null], ['barat', null], ['walima', null],
+    ], id)
+  }
+})
+
 test('unique phone endings use four digits while missing and shared endings use temporary IDs', () => {
   const ids = Object.keys(guests)
-  assert.equal(ids.filter(id => /^\d{4}$/.test(id)).length, 36)
-  assert.equal(ids.filter(id => /^temp-[a-z]+(?:-[a-z]+)*$/.test(id)).length, 24)
+  assert.equal(ids.filter(id => /^\d{4}$/.test(id)).length, 49)
+  assert.equal(ids.filter(id => /^temp-[a-z]+(?:-[a-z]+)*$/i.test(id)).length, 28)
   for (const unresolved of ['8135', '2256', '1325']) assert.equal(getGuest(unresolved), null)
   assert.equal(getGuest('2915').name, 'Samina')
   assert.equal(getGuest('temp-samina').name, 'Samina')

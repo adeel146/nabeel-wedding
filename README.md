@@ -13,7 +13,7 @@ Production: `npm run build`. Preview: `npm run preview`. Configuration tests: `n
 
 ## Guest invitations
 
-The roster contains 60 members with their supplied event assignments and invitation sizes: 36 use unique last-four-phone-digit IDs and 24 use temporary name-based IDs.
+The roster contains 77 members with their supplied event assignments: 49 use unique last-four-phone-digit IDs and 28 use temporary name-based IDs. The 14 newly added members (Shehryar, Mehran, Sohaib, Amir, Hassan, Faraz, Hamza Aman, Faisal, Zubair, Ahad, Shahbaz, Qaiser, Ahmad Raza, and Maqbool) receive all three events with `skipPersons: true`.
 
 | URL | Guest | Invitation |
 | --- | --- | --- |
@@ -23,6 +23,8 @@ The roster contains 60 members with their supplied event assignments and invitat
 | `/invite/9561` | Palwasha Asim Sethi | Mehandi and Walima with family; Barat, 2 persons |
 | `/invite/temp-bushra` | Bushra | All three events, 2 persons each |
 | `/invite/temp-muhammad-arslan` | Muhammad Arslan | All three events, with family |
+| `/invite/9196` | Shehryar | All three events, person labels hidden |
+| `/invite/temp-faraz` | Faraz | All three events, person labels hidden; phone pending |
 
 The explicit links `/invite/guest-001` and `/invite/muhammad-arslan` remain aliases for Muhammad Arslan's invitation. The home page `/` does not open any guest's card.
 
@@ -54,6 +56,20 @@ Use `['walima']` for Walima only, `['barat']` for Barat only, or `['mehandi', 'b
 Set `partySize` separately for each guest and event: a positive whole number such as `2` displays "2 persons", `1` displays "1 person", and `'family'` displays "With family". These are the total invited persons for that event, not extra plus-ones. The roster uses the supplied invitation sizes; the code snippet above is only an example. For an event marked "no", omit it from both `events` and `partySize`; do not use zero. Omitted sizes show no count, rather than assuming a number or a family invitation. Invalid sizes raise an explicit configuration error.
 
 Invitation sizes appear on the assigned event cards, schedule, and selected venue details. They do not grant access to unassigned events or enforce attendance limits.
+
+To hide the person/family label for a specific guest across all their assigned events, add `skipPersons: true` to that guest in `src/config.js`:
+
+```js
+'your-unique-guest-id': {
+  name: 'Your guest name',
+  events: ['barat', 'walima'],
+  partySize: { barat: 2, walima: 'family' },
+  skipPersons: true,
+  message: 'We look forward to celebrating with you.',
+},
+```
+
+This hides both numeric counts and "With family" on the invitation and WhatsApp sender event preview, without changing event assignments or stored party sizes. Omit `skipPersons` or set it to `false` to show the labels again. Use a boolean, not the string `'true'`; invalid sizes still raise configuration errors even when labels are hidden. To hide a size for only one event, omit that event's entry from `partySize` instead.
 
 Rebuild and redeploy after editing guests, then send each guest their own link: `https://YOUR-SITE/invite/your-unique-guest-id`. Unassigned events are absent from their cards, timeline, and venue selector. The sender dashboard below does not edit guest assignments.
 
@@ -87,6 +103,10 @@ Full phone numbers are not stored in the public guest configuration. Shared endi
 | Fayaz | `temp-fayaz` | Number missing |
 | Ijaz | `temp-ijaz` | Number missing |
 | Rauf | `temp-rauf` | Number missing |
+| Saeed | `temp-saeed` | Number missing |
+| Naeem | `temp-naeem` | Number missing |
+| Jara | `temp-Jara` | Number missing |
+| Faraz | `temp-faraz` | Supplied number incomplete; private contact left blank |
 
 When a number is available, rename that member's key in `guests` to its last four digits, quoted as a string to preserve leading zeros. Check that no other member already uses that ending; otherwise keep the distinct temporary ID until a unique number is provided. Leave their name, events, and sizes unchanged. Update the roster test expectations and this table, rebuild, redeploy, and send the new link. Previously sent temporary links stop working after renaming unless explicitly retained as aliases. For Muhammad Arslan, also update the canonical target in `getGuest` so the explicit legacy aliases continue to work.
 

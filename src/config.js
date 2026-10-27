@@ -49,7 +49,7 @@ export const weddingConfig = {
 
 /**
  * @typedef {keyof typeof weddingConfig.events} EventId
- * @typedef {{ name: string, events: EventId[], message: string, partySize?: Partial<Record<EventId, number | 'family'>> }} GuestConfig
+ * @typedef {{ name: string, events: EventId[], message: string, partySize?: Partial<Record<EventId, number | 'family'>>, skipPersons?: boolean }} GuestConfig
  */
 
 /** @type {Record<string, GuestConfig>} */
@@ -432,6 +432,90 @@ export const guests = {
     partySize: { barat: 2, walima: 2 },
     message: 'We look forward to celebrating these special moments with you.',
   },
+  '9196': {
+    name: 'Shehryar',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  '2468': {
+    name: 'Mehran',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  '8290': {
+    name: 'Sohaib',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  '9874': {
+    name: 'Amir',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  '6475': {
+    name: 'Hassan',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  'temp-faraz': {
+    name: 'Faraz',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  '3059': {
+    name: 'Hamza Aman',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  '4800': {
+    name: 'Faisal',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  '8815': {
+    name: 'Zubair',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  '5562': {
+    name: 'Ahad',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  '1408': {
+    name: 'Shahbaz',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  '3211': {
+    name: 'Qaiser',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  '6102': {
+    name: 'Ahmad Raza',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
+  '4415': {
+    name: 'Maqbool',
+    events: ['mehandi', 'barat', 'walima'],
+    skipPersons: true,
+    message: 'We look forward to celebrating these special moments with you.',
+  },
 }
 
 export function getGuest(id) {
@@ -451,9 +535,14 @@ export function formatPartySize(size) {
 
 /** @param {GuestConfig} guest */
 export function getGuestEvents(guest) {
+  if (guest.skipPersons !== undefined && typeof guest.skipPersons !== 'boolean') {
+    throw new TypeError('skipPersons must be true or false.')
+  }
   return guest.events.map(id => {
     const event = weddingConfig.events[id]
-    return event && { ...event, invitationSize: formatPartySize(guest.partySize?.[id]) }
+    if (!event) return event
+    const invitationSize = formatPartySize(guest.partySize?.[id])
+    return { ...event, invitationSize: guest.skipPersons ? null : invitationSize }
   }).filter(Boolean)
 }
 

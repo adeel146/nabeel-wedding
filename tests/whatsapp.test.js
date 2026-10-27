@@ -13,8 +13,24 @@ import {
   whatsappUrl,
 } from '../tools/whatsapp-links.mjs'
 import { createWhatsappServer } from '../tools/whatsapp-server.mjs'
+import { senderPayload } from '../tools/whatsapp-roster.mjs'
 
 const siteUrl = 'https://invitation.example'
+
+test('sender preview respects skipPersons for only the configured guest', t => {
+  const id = 'test-skip-persons'
+  guests[id] = {
+    name: 'Test Guest',
+    events: ['barat', 'walima'],
+    partySize: { barat: 2, walima: 'family' },
+    skipPersons: true,
+    message: 'Test invitation.',
+  }
+  t.after(() => { delete guests[id] })
+  const payload = senderPayload({}, false)
+  assert.deepEqual(payload.guests.find(guest => guest.id === id).events, ['Barat', 'Walima'])
+  assert.deepEqual(payload.guests.find(guest => guest.id === '3232').events, ['Barat: 1 person', 'Walima: 1 person'])
+})
 
 async function contactsFixture(t, contents) {
   // Stay inside the project and never open the real private contacts file.
@@ -187,7 +203,7 @@ test('missing private file yields the complete configured roster with empty numb
     assert.equal(guest.name, guests[guest.id].name)
     assert.equal(guest.phone, '')
     assert.deepEqual(guest.events, getGuestEvents(guests[guest.id])
-      .map(event => `${event.title}: ${event.invitationSize}`))
+      .map(event => event.invitationSize ? `${event.title}: ${event.invitationSize}` : event.title))
   }
   const sorted = [...payload.guests].sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id))
   assert.deepEqual(payload.guests, sorted)
